@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Matching Game</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: sans-serif;
+        }
+        p {
+            margin: 1em 0;
+        }
+        .hidden {
+            display: none;
+        }
+        #token_container {
+            width: 400px;
+        }
+        #token_container img {
+            width: 100px;
+        }
+        .wrong {
+            border: 2px solid red;
+            animation: shake 0.5s;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Matching Game</h1>
+
+    <div id="panel_start">
+        <p>Play a fast-paced game of memory and try and beat your best time</p>
+        <button id="button_playgame">Play the Game</button>
+    </div>
+
+    <div id="panel_gameplaying" class="hidden">
+        <p>Time elapsed: <span id="time_elapsed">0</p>
+        <div id="token_container"></div>
+    </div>
+
+    <div id="panel_gameover" class="hidden">
+        <div>Your time: <span id="time_yourtime">0</span></div>
+        <div>Best time: <span id="time_besttime">0</span></div>
+    </div>
+
+    <script>
+        // DOM references
+        const panel_start = document.getElementById('panel_start');
+        const panel_gameplaying = document.getElementById('panel_gameplaying');
+        const panel_gameover = document.getElementById('panel_gameover');
+        const button_playgame = document.getElementById('button_playgame');
+        const time_elapsed = document.getElementById('time_elapsed');
+        const token_container = document.getElementById('token_container');
+
+        // set up global variables to keep track of what the user has clicked on 
+        let token1 = false;
+        let token2 = false;
+
+        // click the button to start the game
+        button_playgame.onclick = function(event) {
+            // given: an array of image asset paths
+            const assets = ['snorlax.png', 'electrabuzz.png', 'chansey.png', 'oddish.png',
+                'pikachu.png', 'paras.png', 'arcanine.png', 'ponita.png',
+                'venonat.png', 'eggsecute.png', 'machop.png', 'pidgey.png',
+                'psyduck.png', 'tauros.png', 'vulpix.png', 'gloom.png',
+                'krabby.png', 'butterfree.png', 'bulbasaur.png', 'clefairy.png',
+                'koffing.png', 'goldeen.png', 'magikarp.png', 'beedrill.png',
+                'lapras.png', 'meowth.png', 'ekans.png', 'jigglypuff.png',
+                'horsea.png', 'polywog.png', 'sandshrew.png', 'rattata.png',
+                'gengar.png', 'eevee.png', 'bellsprout.png', 'squirtle.png',
+                'seel.png', 'caterpie.png'];
+
+            panel_start.classList.add('hidden');
+            panel_gameplaying.classList.remove('hidden');
+
+            // create the tiles for our game
+            // select 6 images at random and put them into a new array
+            const selectedImages = [];
+
+            for (let i = 0; i < 6 ; i++) {
+                let index = parseInt( Math.random() * assets.length );
+                selectedImages.push( assets[index] );
+                selectedImages.push( assets[index] );
+                assets.splice( index, 1 );
+            }
+
+            // create our tokens that the user can click on
+            for (let image of selectedImages) {
+                const el = document.createElement('img');
+                el.dataset.secretimage = `images/${image}`;
+                el.src = 'images/pokeball.png';
+                token_container.appendChild(el);
+
+                el.onclick = function(event) {
+                    // is this the user's first click?
+                    if (token1 == false) {
+                        el.src = el.dataset.secretimage;
+                        token1 = el;   
+
+                        console.log("token 1:");
+                        console.log(token1);                 
+                    }
+
+                    // is this the second click?
+                    else {
+                        // are they the same?
+                        token2 = el;
+                        el.src = el.dataset.secretimage;
+
+                        console.log("second click");
+                        console.log(token1);
+                        console.log(token2);
+
+                        if (token1.dataset.secretimage == token2.dataset.secretimage) {
+                            // match!
+                            token1 = false;
+                            token2 = false;
+                        }
+                        else {
+                            setTimeout( function() {
+                                // the user didn't match :(
+                                token1.src = 'images/pokeball.png';
+                                token2.src = 'images/pokeball.png';
+
+                                token1 = false;
+                                token2 = false;                                
+                            }, 1000);
+                        }
+
+                        // reset the tokens to allow for a second click 
+                    }
+
+                    //event.currentTarget.src = event.currentTarget.dataset.secretImage;
+                }
+            }
+
+        }
+
+
+
+
+        /* TO-DO:
+            - generate interface (start screen, play screen, game over screen)
+            - randomly "deal" a series of tokens, face down
+            - allow the user to click on a token to reveal its face
+            - allow the user to click on a second token to check if the tokens are the same
+        */
+        
+    </script>
+</body>
+</html>

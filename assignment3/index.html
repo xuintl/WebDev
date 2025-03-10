@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Gotta Catch 'em All</title>
+        <meta charset="utf-8">
+        <viewport content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+        <style>
+            * {
+                box-sizing: border-box;
+                position: relative;
+                font-family: sans-serif;
+            }
+            #container {
+                max-width: 1600px;
+                min-height: 600px;
+            }
+            #left {
+                width: 800px;
+                height: 600px;
+                float: left;
+                border-radius: 10px;
+                margin: 10px 10px 0 0;
+            }
+            #background {
+                width: 100%;
+            }
+            .grass {
+                position: absolute;
+                z-index: 1;
+                bottom: 0px;
+                border-radius: 10px;
+                transition: 0.2s ease;
+            }
+            #grass1 { left: 0px; }
+            #grass2 { left: 270px; }
+            #grass3 { right: 0px; }
+            .grass:hover {
+                background-color: rgba(255, 255, 0, 0.5);
+            }
+            .game-over {
+            color: red;
+            font-weight: bold;
+            }
+            #history_section {
+                margin-top: 20px;
+                min-width: 800px;
+                padding: 10px;
+                border: 1px solid #ccc;
+                border-radius: 5px;
+            }
+            #result_history {
+                list-style-type: none;
+                padding: 0;
+                margin: 0;
+            }
+            #result_history li {
+                border-bottom: 1px solid #eee;
+            }
+            button {
+                padding: 8px 16px;
+                margin: 5px;
+                border: none;
+                border-radius: 5px;
+                background-color: #4CAF50;
+                color: white;
+                transition: 0.2s ease;
+            }
+            button:hover {
+                background-color: #45a049;
+            }
+            #pokedex_table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-bottom: 10px;
+            }
+            #pokedex_table th, #pokedex_table td {
+                text-align: left;
+                border-bottom: 1px solid #ddd;
+            }
+            .histogram-bar {
+                background-color: #4CAF50;
+                height: 20px;
+                min-width: 2px;
+                border-radius: 3px;
+            }
+            #collection_message {
+                margin-top: 10px;
+                padding: 10px;
+                background-color: #dff0d8;
+                border-radius: 5px;
+            }
+            :root {
+                --pikachu-color: #F7D02C;    /* Yellow */
+                --bulbasaur-color: #78C850;  /* Green */
+                --charmander-color: #F08030; /* Orange/Red */
+                --eevee-color: #A8702D;      /* Brown */
+                --squirtle-color: #6890F0;   /* Blue */
+            }
+            .histogram-bar.pikachu { background-color: var(--pikachu-color); }
+            .histogram-bar.bulbasaur { background-color: var(--bulbasaur-color); }
+            .histogram-bar.charmander { background-color: var(--charmander-color); }
+            .histogram-bar.eevee { background-color: var(--eevee-color); }
+            .histogram-bar.squirtle { background-color: var(--squirtle-color); }
+            .faded-image {
+                opacity: 0.2;
+                transition: opacity 1s ease;
+            }
+            #super_mode_message {
+                background-color: #FFD700;
+                color: #000;
+                border-radius: 5px;
+                text-align: center;
+                padding: 10px;
+                margin: 20px 0;
+                display: none;
+                animation: pulse 2s 3;
+                min-width: 800px;
+            }
+
+            @keyframes pulse {
+                0% { opacity: 1; }
+                50% { opacity: 0.5; }
+                100% { opacity: 1; }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div id="container">
+            <div id="left">
+                <!-- background + grasses -->
+                <img id="background" src="images/environment_forestbackground.png">
+                <img id="grass1" class="grass" src="images/grass.png">
+                <img id="grass2" class="grass" src="images/grass.png">
+                <img id="grass3" class="grass" src="images/grass.png">
+            </div>
+
+            <div id="right">
+                <!-- instructions & output (text) + play again button -->
+                <h1>Gotta Catch 'em All</h1>
+                <p>Your goal in this game is to earn as many Pokeballs as possible while catching a variety of Pokemon along the way.</p>
+                <p>To play simply click on one of the three grass clumps in the forest. Behind one of those grass clumps is a Pokemon that can be caught. Behind another grass clump are two free Pokeballs that you can use to try again, and behind the last grass clump is nothing.</p>
+                <p>Note that each time you pick a grass clump you will be using one of your Pokeballs, and when you run out the game will be over!</p>
+                <h2>Results</h2>
+                <p id="results">Your progress so far...</p>
+                <p>Pokeballs left: <span id="pokeballs_left">5</span></p>
+                <p>Pokemon caught: <span id="pokemon_caught">0</span></p>
+                <button id="button_playagain" style="display: none;">Play Again</button>
+                <p id="game_over_message" class="game-over" style="display: none;">Game Over! No more Pokeballs!</p>
+            </div>
+        </div>
+
+        <p id="super_mode_message" style="display: none;">
+            <i class="fas fa-star"></i> Super Item Mode Active! <i class="fas fa-star"></i>
+        </p>
+
+        <div id="history_section">
+            <h2>Game History
+                <button id="button_startover">Start Over</button>
+                <button id="button_clearhistory">Clear Results</button>
+            </h2>
+            <div id="pokedex_section">
+                <table id="pokedex_table">
+                    <tr>
+                        <th>Pokemon</th>
+                        <th>Count</th>
+                        <th>Distribution</th>
+                    </tr>
+                </table>
+                <p id="collection_message" style="display: none; color: red; font-weight: bold;">
+                    Congratulations! You've caught at least one of each Pokemon!
+                </p>
+            </div>
+            <div id="result_history_section">
+                <ul id="result_history"></ul>
+            </div>
+        </div>
+
+        </div>
+
+        <script>
+            // DOM Elements
+            const grass1 = document.getElementById('grass1');
+            const grass2 = document.getElementById('grass2');
+            const grass3 = document.getElementById('grass3');
+            const results = document.getElementById('results');
+            const pokeballs_left = document.getElementById('pokeballs_left');
+            const pokemon_caught = document.getElementById('pokemon_caught');
+            const button_playagain = document.getElementById('button_playagain');
+            const gameOverMessage = document.getElementById('game_over_message');
+            const resultHistory = document.getElementById('result_history');
+            const buttonStartOver = document.getElementById('button_startover');
+            const buttonClearHistory = document.getElementById('button_clearhistory');
+
+            // Game State
+            let pokeballsLeft = 5;
+            let pokemonCaught = 0;
+            let gameActive = true; // Flag to control game flow
+            let hiddenItems = [];  // Array to hold what's behind each grass
+            const grassElements = [grass1, grass2, grass3]; // Array to make looping easier
+            let gameHistory = [];
+            const pokedexStats = {
+                'Pikachu': 0,
+                'Bulbasaur': 0,
+                'Charmander': 0,
+                'Eevee': 0,
+                'Squirtle': 0
+            };
+
+            // Possible Pokemon
+            const pokemon = [
+                {name:'Pikachu', image:'images/pikachu.png'},
+                {name:'Bulbasaur', image:'images/bulbasaur.png'},
+                {name:'Charmander', image:'images/charmander.png'},
+                {name:'Eevee', image:'images/eevee.png'},
+                {name:'Squirtle', image:'images/squirtle.png'}
+            ];
+
+            // Add after the pokemon array
+            const superItems = [
+                {
+                    name: 'Super Ball',
+                    image: 'images/super_ball.png',
+                    effect: () => {
+                        pokeballsLeft += 4;
+                        return 'You found a Super Ball! +4 Pokeballs!';
+                    }
+                },
+                {
+                    name: 'Phoenix',
+                    image: 'images/phoenix.webp',
+                    effect: () => {
+                        pokeballsLeft += 2;
+                        pokemonCaught += 2;
+                        return 'You found a Mythical Phoenix! +2 Pokeballs and +2 Pokemon!';
+                    }
+                },
+                {
+                    name: 'Dratini',
+                    image: 'images/dratini.png',
+                    effect: () => {
+                        pokeballsLeft += 1;
+                        pokemonCaught += 3;
+                        return 'You found a Rare Dratini! +3 Pokemon and +1 Pokeball!';
+                    }
+                }
+            ];
+
+            // Function to shuffle an array
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            // Modify the initializeRound function
+            function initializeRound() {
+                // Chance of super mode
+                superModeActive = Math.random() < 0.3;
+    
+                if (superModeActive) {
+                    hiddenItems = ['super_item', 'pokeballs', 'nothing'];
+                    document.getElementById('super_mode_message').style.display = 'block';
+                } else {
+                    hiddenItems = ['pokemon', 'pokeballs', 'nothing'];
+                    document.getElementById('super_mode_message').style.display = 'none';
+                }
+    
+                shuffleArray(hiddenItems);
+            }
+
+            // Update Display
+            function updateDisplay() {
+                pokeballs_left.innerText = pokeballsLeft;
+                pokemon_caught.innerText = pokemonCaught;
+            }
+
+            // Check Game Over
+            function checkGameOver() {
+                if (pokeballsLeft <= 0) {
+                    gameActive = false;
+                    gameOverMessage.style.display = 'block'; //Show Game Over message
+                    grassElements.forEach(grass => {
+                        grass.classList.add('clicked'); // Disable clicks
+                    });
+                }
+            }
+
+            // Generic Grass Click Handler
+            function handleGrassClick(grass, index) {
+                if (!gameActive) return; // Prevent clicks after game over
+                if (grass.classList.contains('clicked')) return; // Prevent clicking the same grass twice
+
+                updateDisplay();
+                grassElements.forEach(grass => {
+                    grass.classList.add('clicked');
+                });
+
+                // Reveal all items, but fade out unselected ones
+                grassElements.forEach((grassElement, i) => {
+                    const item = hiddenItems[i];
+                    
+                    if (i === index) {
+                        // Selected grass - show normally
+                        revealItem(grassElement, item);
+                    } else {
+                        // Unselected grass - show faded
+                        revealItem(grassElement, item);
+                        grassElement.classList.add('faded-image');
+                    }
+                });
+
+                // Handle the clicked item's effects
+                const item = hiddenItems[index];
+                switch (item) {
+                    case 'super_item':
+                        const superItem = superItems[Math.floor(Math.random() * superItems.length)];
+                        grass.src = superItem.image;
+                        const message = superItem.effect();
+                        updateDisplay();
+                        results.innerText = message;
+                        addToHistory(message);
+                        break;
+                    case 'pokemon':
+                        const randomPokemon = pokemon[Math.floor(Math.random() * pokemon.length)];
+                        grass.src = randomPokemon.image;
+                        pokeballsLeft--;
+                        pokemonCaught++;
+                        updateDisplay();
+                        updatePokedex(randomPokemon.name);
+                        results.innerText = `You caught a ${randomPokemon.name}!`;
+                        addToHistory(`You caught a ${randomPokemon.name}!`);
+                        break;
+                    case 'pokeballs':
+                        pokeballsLeft += 2;
+                        updateDisplay();
+                        results.innerText = 'You found 2 Pokeballs!';
+                        addToHistory('You found 2 Pokeballs!');
+                        break;
+                    case 'nothing':
+                        pokeballsLeft--;
+                        updateDisplay();
+                        results.innerText = 'Nothing here!';
+                        addToHistory('Nothing here!');
+                        break;
+                }
+
+                checkGameOver();
+                button_playagain.style.display = 'block';
+            }
+
+            // Add this new helper function for revealing items
+            function revealItem(grassElement, item) {
+                switch (item) {
+                    case 'super_item':
+                        const superItem = superItems[Math.floor(Math.random() * superItems.length)];
+                        grassElement.src = superItem.image;
+                        return superItem;
+                    case 'pokemon':
+                        const randomPokemon = pokemon[Math.floor(Math.random() * pokemon.length)];
+                        grassElement.src = randomPokemon.image;
+                        return randomPokemon;
+                    case 'pokeballs':
+                        grassElement.src = 'images/pokeballs.png';
+                        break;
+                    case 'nothing':
+                        grassElement.src = '';
+                        break;
+                }
+            }
+
+            // Play Again Button
+            button_playagain.onclick = function() {
+                if (!gameActive) return; // Prevent clicking after game over
+
+                //Reset the game board
+                grassElements.forEach(grass => {
+                    grass.src = 'images/grass.png';
+                    grass.classList.remove('clicked'); // Re-enable clicks
+                    grass.classList.remove('faded-image');
+                });
+
+                //Hide the Play Again button
+                button_playagain.style.display = 'none';
+
+                //Clear the result message
+                results.innerText = 'Your progress so far...';
+
+                gameOverMessage.style.display = 'none';
+
+                gameActive = true;
+
+                document.getElementById('super_mode_message').style.display = 'none';
+
+                //Re-randomize hidden items
+                initializeRound();
+            };
+
+            // Add to history
+            function addToHistory(message) {
+                // Create history entry with current stats
+                const historyEntry = `${message} .................... Pokeballs: ${pokeballsLeft} | Pokemon: ${pokemonCaught}`;
+                gameHistory.unshift(historyEntry); // Add to beginning of array
+                updateHistoryDisplay();
+            }
+
+            function updateHistoryDisplay() {
+                resultHistory.innerHTML = gameHistory
+                    .map(message => `<li>${message}</li>`)
+                    .join('');
+            }
+
+            // Start Over Button
+            buttonStartOver.onclick = function() {
+                // Reset game state
+                pokeballsLeft = 5;
+                pokemonCaught = 0;
+                gameActive = true;
+                gameHistory = [];
+                
+                // Reset display
+                updateDisplay();
+                updateHistoryDisplay();
+                results.innerText = 'Your progress so far...';
+                gameOverMessage.style.display = 'none';
+                button_playagain.style.display = 'none';
+                
+                // Reset grass
+                grassElements.forEach(grass => {
+                    grass.src = 'images/grass.png';
+                    grass.classList.remove('clicked');
+                    grass.classList.remove('faded-image');
+                });
+                
+                // Reset Pokedex stats
+                for (const pokemon in pokedexStats) {
+                    pokedexStats[pokemon] = 0;
+                }
+                updatePokedexDisplay();
+                document.getElementById('collection_message').style.display = 'none';
+                
+                // Initialize new round
+                document.getElementById('super_mode_message').style.display = 'none';
+                initializeRound();
+            };
+
+            // Clear History Button
+            buttonClearHistory.onclick = function() {
+                gameHistory = [];
+                updateHistoryDisplay();
+            };
+
+            function updatePokedex(pokemonName) {
+                pokedexStats[pokemonName]++;
+                updatePokedexDisplay();
+                checkCollection();
+            }
+
+            function updatePokedexDisplay() {
+                const pokedexTable = document.getElementById('pokedex_table');
+                // Clear existing rows except header
+                while (pokedexTable.rows.length > 1) {
+                    pokedexTable.deleteRow(1);
+                }
+                
+                const maxCount = Math.max(...Object.values(pokedexStats));
+                
+                for (const [name, count] of Object.entries(pokedexStats)) {
+                    const row = pokedexTable.insertRow();
+                    row.insertCell(0).textContent = name;
+                    row.insertCell(1).textContent = count;
+                    
+                    // Create histogram bar with Pokemon-specific color
+                    const barCell = row.insertCell(2);
+                    const percentage = maxCount > 0 ? (count / maxCount) * 100 : 0;
+                    const pokemonClass = name.toLowerCase();
+                    barCell.innerHTML = `<div class="histogram-bar ${pokemonClass}" style="width: ${percentage}%">&nbsp;</div>`;
+                }
+            }
+
+            function checkCollection() {
+                const collectionComplete = Object.values(pokedexStats).every(count => count > 0);
+                const collectionMessage = document.getElementById('collection_message');
+                collectionMessage.style.display = collectionComplete ? 'block' : 'none';
+            }
+
+            // Initialize the game
+            initializeRound();
+            updateDisplay();
+            updatePokedexDisplay();
+
+            // Add click listeners to the grasses
+            grass1.onclick = () => handleGrassClick(grass1, 0);
+            grass2.onclick = () => handleGrassClick(grass2, 1);
+            grass3.onclick = () => handleGrassClick(grass3, 2);
+
+        </script>
+    </body>
+</html>

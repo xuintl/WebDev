@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Greetings</title>
+        <style>
+            #container {
+                border: 5px solid black;
+                width: 800px;
+                height: 600px;
+                position: relative;
+                margin: auto;
+                font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+            }
+            #background {
+                width: 100%;
+                height: 100%;
+                position: absolute;
+                z-index: 0;
+            }
+            #title {
+                position: absolute;
+                z-index: 1;
+                left: 20px;
+                color: white;
+            }
+            #time {
+                position: absolute;
+                z-index: 1;
+                left: 20px;
+                top: 100px;
+                background-color: #ccc;
+                padding: 20px;
+                border-radius: 20px;
+            }
+            #body {
+                position: absolute;
+                z-index: 1;
+                bottom: 0px;
+                right: 0px;
+            }
+            #head {
+                position: absolute;
+                z-index: 1;
+                right: 70px;
+                bottom: 275px;
+            }
+        </style>
+    </head>
+    <body> 
+    <script>
+            const words = ['Awesome', 'Fantastic', 'Fabulous', 'Superb', 'Perfect', 'Brilliant', 'Coming up Roses'];
+            const greeting = words[parseInt(Math.random() * words.length)];
+
+            // Grab the current time as an OBJECT
+            let currentTime = new Date();
+            let hours = currentTime.getHours();
+            let minutes = currentTime.getMinutes();
+
+            // Determine the time of day
+            let timeGreeting;
+            if (hours >= 0 && hours < 6) {
+                timeGreeting = "night";
+            } else if (hours >= 6 && hours < 12) {
+                timeGreeting = "morning";
+            } else if (hours >= 12 && hours < 18) {
+                timeGreeting = "afternoon";
+            } else {
+                timeGreeting = "evening";
+            }
+
+            // Convert to 12-hour format and determine AM/PM
+            let period = hours >= 12 ? 'PM' : 'AM';
+            hours = hours % 12 || 12; // Convert hour '0' to '12'
+
+            // Prompt the user for a number
+            let number;
+            do {
+                number = prompt("Please enter a positive number greater than or equal to 3");
+                number = parseInt(number);
+            } while (Number.isNaN(number) || number < 3);
+
+            // Generate three unique lucky numbers
+            function generateLuckyNumbers(max) {
+                let luckyNumbers = new Set();
+                while (luckyNumbers.size < 3) {
+                    luckyNumbers.add(Math.floor(Math.random() * max) + 1);
+                }
+                return Array.from(luckyNumbers);
+            }
+
+            let luckyNumbers = generateLuckyNumbers(number);
+
+            // Array of available bodies and heads
+            const bodies = ['body1.png', 'body2.png', 'body3.png'];
+            const heads = ['head1.png', 'head2.png', 'head3.png'];
+
+            // Function to pick a random item from an array
+            function pickRandom(array) {
+                return array[Math.floor(Math.random() * array.length)];
+            }
+
+            // Randomly select a body and a head
+            const randomBody = pickRandom(bodies);
+            const randomHead = pickRandom(heads);
+
+            // Display the greeting, time, and lucky numbers
+            document.write(`<div id="container">
+                <h1 id="title">Everything is ${greeting}</h1>
+                <div id="time">
+                    The current time is ${hours < 10 ? '0' + hours : hours}:${minutes < 10 ? '0' + minutes : minutes} ${period}, good ${timeGreeting}!
+                    <br><br>
+                    Your lucky numbers are: ${luckyNumbers.join(', ')}
+                </div>
+                <img id="body" src="images/bodies/${randomBody}">
+                <img id="head" src="images/heads/${randomHead}">
+                <img id="background" src="images/backgrounds/${timeGreeting}.png">
+            </div>`)
+        </script>
+    </body>
+</html>

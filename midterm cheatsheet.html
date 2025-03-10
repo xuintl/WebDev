@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>JS Exam Prep</title>
+  <style>
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div id="output">Original Content</div>
+  <button id="btn">Click Me</button>
+  <form id="myForm">
+    <input type="text" id="inputField" value="Hello" data-info="example">
+  </form>
+  
+  <!-- JavaScript placement: inline, internal, or external -->
+  <script>
+    // Variable declarations & data types
+    let num = 42;              // Number
+    const str = "Hello";       // String
+    var bool = true;          // Boolean
+    let arr = [1, 2, 3];      // Array
+    let obj = { name: "Grok" }; // Object
+    let undef;                // Undefined
+
+    // Output methods
+    console.log("Logged:", num);
+    document.write("Written ");
+    // alert("Alert!");
+    // let userInput = prompt("Enter something:");
+
+    // Data type conversion
+    function convertTypes() {
+      let x = parseInt("123");     // String to number
+      let y = parseFloat("12.34"); // String to float
+      let z = num.toString();      // Number to string
+      console.log(1 + 2 + 3 + "4"); // Implicit: "64"
+    }
+
+    // Random number generator
+    function getRandomNum() {
+      return Math.floor(Math.random() * 100);
+    }
+
+    // Conditional logic
+    function checkNumber(n) {
+      if (n === 42) {           // Strict equality
+        return "Exactly 42";
+      } else if (n == "42") {   // Loose equality
+        return "Kinda 42";
+      } else {
+        return "Not 42";
+      }
+    }
+
+    // Loops
+    function countToTen() {
+      let i = 0;
+      while (i < 10) {
+        console.log(i);
+        i++;
+      }
+      for (let j = 0; j < 10; j++) {
+        console.log(j);
+      }
+    }
+
+    // String mechanics
+    function manipulateString(text) {
+      let newText = text + " World"; // Concatenation
+      return newText.split(" ");     // Split into array
+    }
+
+    // Array mechanics
+    function manageArray() {
+      let list = [1, 2];
+      list.push(3);          // Add to end
+      list.splice(0, 1);     // Remove at index 0
+      return list;
+    }
+
+    // Functions: named vs anonymous
+    function namedFunc() { return "Named"; }
+    const anonFunc = function() { return "Anonymous"; };
+    const funcRef = namedFunc; // Function reference
+
+    // Object with properties & methods
+    const person = {
+      name: "Grok",
+      greet() { return `Hi, I'm ${this.name}`; }
+    };
+
+    // DOM manipulation
+    function updateDOM() {
+      // Single element references
+      let div = document.getElementById("output");
+      let btn = document.querySelector("#btn");
+
+      // Modify attributes, styles, classes, content
+      div.setAttribute("title", "Updated");
+      div.style.color = "blue";
+      div.classList.add("hidden");
+      div.innerHTML = "New Content";
+
+      // Multiple elements
+      let allDivs = document.getElementsByTagName("div");
+      let queried = document.querySelectorAll("div");
+      for (let el of queried) {
+        el.style.fontSize = "20px";
+      }
+    }
+
+    // Event handling
+    document.getElementById("btn").onclick = function(event) {
+      console.log("Clicked!", event.currentTarget);
+      event.stopPropagation(); // Stop bubbling
+      event.preventDefault();  // Stop default behavior
+      toggleVisibility();
+    };
+
+    // Multiple event listeners
+    const btn = document.getElementById("btn");
+    btn.addEventListener("mouseover", () => console.log("Hovered"));
+    btn.addEventListener("mouseout", () => console.log("Left"));
+
+    // Toggle visibility
+    function toggleVisibility() {
+      let div = document.getElementById("output");
+      div.classList.toggle("hidden");
+    }
+
+    // Create & manipulate DOM elements
+    function addElement() {
+      let newDiv = document.createElement("div");
+      newDiv.textContent = "New Div";
+      document.body.appendChild(newDiv);
+
+      let output = document.getElementById("output");
+      output.insertBefore(newDiv, output.firstElementChild);
+      // output.removeChild(newDiv); // Remove
+    }
+
+    // DOM pointers
+    function exploreDOM() {
+      let div = document.getElementById("output");
+      console.log(div.parentElement);
+      console.log(div.nextElementSibling);
+      console.log(div.children);
+    }
+
+    // Form handling
+    function handleForm() {
+      let input = document.getElementById("inputField");
+      console.log(input.value);          // Get value
+      input.value = "Updated";          // Set value
+      console.log(input.dataset.info);  // HTML5 data attribute
+    }
+
+    // Closure & self-invoking function
+    const counter = (function() {
+      let count = 0;
+      return function() { return ++count; };
+    })();
+
+    // Timing functions
+    setTimeout(() => console.log("Delayed"), 1000);
+    let interval = setInterval(() => console.log("Every sec"), 1000);
+    // clearInterval(interval); // To stop
+
+    // LocalStorage
+    function saveData() {
+      localStorage.setItem("key", "value");
+      console.log(localStorage.getItem("key"));
+    }
+
+    // Security note: Obfuscation/minification happens externally (e.g., via tools)
+
+    // Test some functions
+    console.log(checkNumber(42));
+    console.log(manipulateString("Hello"));
+    console.log(counter());
+    console.log(counter());
+  </script>
+</body>
+</html>
+
+const boxes = document.querySelectorAll(".box");
+boxes.forEach(box => {
+    if (box.dataset.secret == 'red') {
+        box.classList.add("red")
+    }
+});
+
+setTimeout(function() {
+    const sumbox = document.querySelector('#sum');
+    const boxes = document.querySelectorAll('.box');
+    let sum = 0;
+
+    for (let box of boxes) {
+        sum += parseInt(box.innerText);
+    };
+
+    sumbox.innerText = sum;
+}, 1000);
+
+button_create_one.onclick = (event) => {
+    createBox();
+}
+let thisInterval;
+button_create_many.onclick = (event) => {
+    clearInterval(thisInterval);
+    thisInterval = setInterval(() => {createBox()}, 500);
+    console.dir(thisInterval);
+}
+function createBox() {
+    const e = document.createElement('div');
+
+    e.classList.add('box');
+
+    e.style.top = parseInt(Math.random()*475) + 'px';
+    e.style.left = parseInt(Math.random()*475) + 'px';
+
+    e.style.backgroundColor = colors[parseInt(Math.random()*colors.length)];
+
+    e.style.border = dropdown_border.value;
+    box_container.appendChild(e);
+}

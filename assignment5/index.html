@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <title>Season To-Do List</title>
+    <style>
+        #button_add_event:hover {
+            width: 60px;
+            height: 60px;
+            bottom: 15px;
+            right: 15px;
+        }
+        .hidden {
+            display: none;
+        }
+        .item {
+            padding: 1rem;
+            margin: 1rem;
+            border-radius: 5px;
+            
+        }
+        .spring {
+            background-color: aquamarine;
+        }
+        .summer {
+            background-color: yellow;
+        }
+        .fall {
+            background-color: orange;
+        }
+        .winter {
+            background-color: lightblue;
+        }
+    </style>
+</head>
+
+<body style="background-image: url(./images/corkboard.jpg);">
+    <h1>Season To-Do List</h1>
+
+    <select id="fileter" style="position:absolute; right: 30px; top: 30px;">
+        <option value="all">All Seasons</option>
+        <option value="spring">Spring</option>
+        <option value="summer">Summer</option>
+        <option value="fall">Fall</option>
+        <option value="winter">Winter</option>
+    </select>
+
+    <img id="button_add_event" src="./images/add_button.png" alt="Add Event Button" width="50" height="50" style="position:absolute; right: 20px; bottom: 20px; transition: 0.5s ease-in-out;">
+
+    <div id="items"></div>
+
+    <div id="modal_add_event" class="hidden">
+        <h2>New Event</h2>
+        <form>
+            <div>
+                <label for="modal_add_event_title">Title:</label>
+                <input type="text" id="modal_add_event_title">
+            </div>
+            <div>
+                <label for="modal_add_event_season">Season</label>
+                <select id="modal_add_event_season">
+                    <option value="">Select a season</option>
+                    <option value="spring">Spring</option>
+                    <option value="summer">Summer</option>
+                    <option value="fall">Fall</option>
+                    <option value="winter">Winter</option>
+                </select>
+            </div>
+            <div>
+                <label for="modal_add_event_content">Content</label>
+                <textarea id="modal_add_event_content"></textarea>                    
+            </div>
+            <div>
+                <button id="modal_add_event_save">Save</button>
+                <button id="modal_add_event_cancel">Cancel</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const button_add_event = document.querySelector('#button_add_event');
+        const modal_add_event = document.querySelector('#modal_add_event');
+        const model_add_event_save = document.getElementById('modal_add_event_save');
+        const modal_add_event_cancel = document.getElementById('modal_add_event_cancel');
+
+        button_add_event.onclick = function(event) {
+            modal_add_event.classList.remove('hidden');
+        }
+        modal_add_event_cancel.onclick = function(event) {
+            event.preventDefault();
+            modal_add_event.classList.add('hidden');
+        }
+        model_add_event_save.onclick = function(event) {
+            event.preventDefault();
+            const title = document.getElementById('modal_add_event_title').value;
+            const season = document.getElementById('modal_add_event_season').value;
+            const content = document.getElementById('modal_add_event_content').value;
+
+            // Form validation
+            if (!title || !season || !content) {
+                alert('Please fill out all fields');
+                return;
+            }
+
+            // Create event
+            const item = document.createElement('div');
+            item.classList.add('item');
+            item.classList.add(season);
+            item.innerHTML = title;
+            item.dataset.content = content;
+            document.getElementById('items').appendChild(item);
+
+            // Add creation time
+            item.dataset.createdAt = new Date();
+            item.dataset.lastAccessed = item.dataset.createdAt;
+
+            // Fix item click handler
+            item.onclick = function(event) {
+                // Show info panel with item details
+                showInfoPanel(this.innerHTML, season, this.dataset.content, this.dataset.createdAt, new Date());
+                
+                // Update last accessed time
+                this.dataset.lastAccessed = new Date();
+            }
+
+            // Add delete button to items
+            const deleteBtn = document.createElement('button');
+            deleteBtn.innerHTML = '×';
+            deleteBtn.classList.add('delete-btn', 'hidden');
+            deleteBtn.onclick = function(event) {
+                event.stopPropagation(); // Prevent triggering item's onclick
+                item.remove();
+            };
+            item.appendChild(deleteBtn);
+
+            // Add hover functionality
+            item.onmouseover = function() {
+                this.querySelector('.delete-btn').classList.remove('hidden');
+            }
+            item.onmouseout = function() {
+                this.querySelector('.delete-btn').classList.add('hidden');
+            }
+
+            modal_add_event.classList.add('hidden');
+            modal_add_event.querySelector('form').reset();
+        }
+
+        // Fix the filter functionality
+        document.getElementById('fileter').onchange = function() {
+            const filterValue = this.value;
+            const items = document.querySelectorAll('.item');
+            
+            if (filterValue === 'all') {
+                items.forEach(item => item.style.display = 'block');
+            } else {
+                items.forEach(item => {
+                    if (item.classList.contains(filterValue)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        // Function to show info panel
+        function showInfoPanel(title, season, description, createdAt, lastAccessed) {
+            // Create and show info panel
+            // You'll need to implement this based on the requirements
+        }
+    </script>
+
+</body>
+</html>

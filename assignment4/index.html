@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <title>Design Your own Hogwarts!</title>
+    <style type="text/css">
+      body {
+        font-family: Arial, sans-serif;
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      h1 {
+        margin: 0;
+        padding: 1em;
+        text-align: center;
+      }
+      #left {
+        float: left;
+        width: 320px;
+        height: 320px;
+        border: 2px solid #333;
+        margin: 1em;
+      }
+      #right {
+        float: left;
+        min-width: 320px;
+        border: 2px solid #333;
+        margin: 1em;
+      }
+      .tile {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+      }
+      #left .tile:hover {
+        border: 2px solid #f00;
+      }
+      #right .tile {
+        margin: 2px;
+      }
+      #right .selected {
+        border: 2px solid rgb(255, 230, 0);
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>Design Your Own Hogwarts!</h1>
+
+    <div id="left">
+      <!-- display the map here -->
+    </div>
+    <div id="right">
+      <p style="margin: 1em; border-bottom: 1px solid #ddd;">Click on a tile here to select it. Then click on the map to the left to place the tile.</p>
+      <!-- display all the tiles here -->
+    </div>
+
+    <!-- load in the image array file - this makes available a new array of all image filenames that you can use for this project -->
+    <!-- Assets courtesy of Crawl Stone Soup: https://github.com/crawl/tiles -->
+    <script src="image_array.js"></script>
+
+    <!-- write your code here -->
+    <script>
+      const left = document.querySelector('#left');
+      const right = document.querySelector('#right');
+      let selectedTile = null;
+      
+      // display the map on the left
+      for (let i = 0; i < 100; i++) {
+        const tile = document.createElement('div');
+        tile.classList.add('tile');
+        
+      }
+    </script>
+
+  </body>
+</html>
