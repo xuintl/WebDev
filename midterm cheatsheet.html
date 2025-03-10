@@ -181,47 +181,75 @@
     console.log(counter());
     console.log(counter());
   </script>
+  <script>
+    // for each loop
+    const boxes = document.querySelectorAll(".box");
+    // for (let i = 0; i < boxes.length; i++) {
+    // for (let box of boxes) {
+    boxes.forEach(box => {
+        if (box.dataset.secret == 'red') {
+            box.classList.add("red")
+        }
+    });
+
+    // timeout function
+    setTimeout(function() {
+        const sumbox = document.querySelector('#sum');
+        const boxes = document.querySelectorAll('.box');
+        let sum = 0;
+
+        for (let box of boxes) {
+            sum += parseInt(box.innerText);
+        };
+
+        sumbox.innerText = sum;
+    }, 1000);
+
+    // interval function
+    button_create_one.onclick = (event) => {
+        createBox();
+    }
+    let thisInterval;
+    button_create_many.onclick = (event) => {
+        clearInterval(thisInterval);
+        thisInterval = setInterval(() => {createBox()}, 500);
+        console.dir(thisInterval);
+    }
+    // random selection
+    function createBox() {
+        const e = document.createElement('div');
+
+        e.classList.add('box');
+
+        e.style.top = parseInt(Math.random()*475) + 'px';
+        e.style.left = parseInt(Math.random()*475) + 'px';
+
+        e.style.backgroundColor = colors[parseInt(Math.random()*colors.length)];
+
+        e.style.border = dropdown_border.value;
+        box_container.appendChild(e);
+    }
+
+    // object (array) with properties and methods
+    // method auto runs when being called to return a value
+    const superItems = [
+      {
+        name: 'Super Ball',
+        image: 'images/super_ball.png',
+        effect: () => {
+            pokeballsLeft += 4;
+            return 'You found a Super Ball! +4 Pokeballs!';
+        }
+      },
+    ];
+
+    // switch statement
+    switch (item) {
+      case '1':
+        break;
+      case '2m':
+        break;
+    }
+  </script>
 </body>
 </html>
-
-const boxes = document.querySelectorAll(".box");
-boxes.forEach(box => {
-    if (box.dataset.secret == 'red') {
-        box.classList.add("red")
-    }
-});
-
-setTimeout(function() {
-    const sumbox = document.querySelector('#sum');
-    const boxes = document.querySelectorAll('.box');
-    let sum = 0;
-
-    for (let box of boxes) {
-        sum += parseInt(box.innerText);
-    };
-
-    sumbox.innerText = sum;
-}, 1000);
-
-button_create_one.onclick = (event) => {
-    createBox();
-}
-let thisInterval;
-button_create_many.onclick = (event) => {
-    clearInterval(thisInterval);
-    thisInterval = setInterval(() => {createBox()}, 500);
-    console.dir(thisInterval);
-}
-function createBox() {
-    const e = document.createElement('div');
-
-    e.classList.add('box');
-
-    e.style.top = parseInt(Math.random()*475) + 'px';
-    e.style.left = parseInt(Math.random()*475) + 'px';
-
-    e.style.backgroundColor = colors[parseInt(Math.random()*colors.length)];
-
-    e.style.border = dropdown_border.value;
-    box_container.appendChild(e);
-}

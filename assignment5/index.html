@@ -36,7 +36,7 @@
 <body style="background-image: url(./images/corkboard.jpg);">
     <h1>Season To-Do List</h1>
 
-    <select id="fileter" style="position:absolute; right: 30px; top: 30px;">
+    <select id="filter" style="position:absolute; right: 30px; top: 30px;">
         <option value="all">All Seasons</option>
         <option value="spring">Spring</option>
         <option value="summer">Summer</option>
@@ -145,7 +145,7 @@
         }
 
         // Fix the filter functionality
-        document.getElementById('fileter').onchange = function() {
+        document.getElementById('filter').onchange = function() {
             const filterValue = this.value;
             const items = document.querySelectorAll('.item');
             
