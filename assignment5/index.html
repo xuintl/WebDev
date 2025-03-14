@@ -114,6 +114,20 @@
         .item:hover .complete-button {
             visibility: visible;
         }
+        .editable-content {
+            border: 1px dashed transparent;
+            padding: 5px;
+            transition: all 0.3s;
+        }
+        .editable-content:hover {
+            border-color: #ccc;
+            background-color: #f9f9f9;
+        }
+        .editable-content:focus {
+            border-color: blue;
+            background-color: white;
+            outline: none;
+        }
     </style>
 </head>
 
@@ -169,13 +183,24 @@
     </div>
 
     <div id="info_panel" class="hidden" style="box-sizing: border-box; padding: 20px; width: 600px; height: 400px; background-color: #fff; position: absolute; top: 50%; left: 50%; margin-left: -300px; margin-top: -200px; border-radius: 20px;">
-        <h2 id="info_panel_title"></h2>
-        <p>Season: <span id="info_panel_season"></span></p>
-        <p><span id="info_panel_content"></span></p>
+        <h2 id="info_panel_title" class="editable-content" contenteditable="true"></h2>
+        <p>Season: 
+            <select id="info_panel_season_select" style="display: inline-block;">
+                <option value="Spring">Spring</option>
+                <option value="Summer">Summer</option>
+                <option value="Fall">Fall</option>
+                <option value="Winter">Winter</option>
+            </select>
+            <span id="info_panel_season" style="display: none;"></span>
+        </p>
+        <p><div id="info_panel_content" class="editable-content" contenteditable="true" style="min-height: 100px;"></div></p>
         <hr>
         <p>Created At: <span id="info_panel_created_at"></span></p>
-        <p>Last Accessed: <span id="info_panel_last_accessed"></span><br></p>
-        <button id="info_panel_close">Close</button>
+        <p>Last Accessed: <span id="info_panel_last_accessed"></span></p>
+        <div class="info-panel-buttons">
+            <button id="info_panel_save">Save Changes</button>
+            <button id="info_panel_close">Close</button>
+        </div>
     </div>
 
     <script>
@@ -213,6 +238,7 @@
             itemTitle.classList.add('item-title');
             item.appendChild(itemTitle);
             item.classList.add(season);
+            item.dataset.season = season;
             item.dataset.content = content;
             item.classList.add('item');
             document.getElementById('items').appendChild(item);
@@ -223,15 +249,15 @@
 
             // Add item click handler
             item.onclick = function(event) {
-                console.log(this.classList[0]);
                 // Show info panel with item details
                 showInfoPanel(
                     this.querySelector('.item-title').innerHTML,
-                    this.classList[0],
+                    this.dataset.season,
                     this.dataset.content,
                     this.dataset.createdAt,
                     this.dataset.lastAccessed
                 );
+                
                 // Update last accessed time
                 this.dataset.lastAccessed = new Date();
             };
@@ -321,24 +347,72 @@
             }
         }
 
+        // Add a variable to track the current item being viewed
+        let currentViewingItem = null;
+
         // Function to show info panel
         function showInfoPanel(title, season, content, createdAt, lastAccessed) {
             if(!add_panel.classList.contains('hidden')) {
                 add_panel.classList.add('hidden');
             }
+            
+            // Store reference to the current item
+            currentViewingItem = event.currentTarget;
+            
             // Show info panel
             infoPanel.classList.remove('hidden');
             document.getElementById('info_panel_title').innerHTML = title;
+            
+            // Set the correct season in the dropdown
+            const seasonSelect = document.getElementById('info_panel_season_select');
+            seasonSelect.value = season;
             document.getElementById('info_panel_season').innerHTML = season;
+            
             document.getElementById('info_panel_content').innerHTML = content;
             document.getElementById('info_panel_created_at').innerHTML = createdAt;
             document.getElementById('info_panel_last_accessed').innerHTML = lastAccessed;
+
+            // Handle the save button click
+            document.getElementById('info_panel_save').onclick = function(event) {
+                event.preventDefault();
+                
+                // Get the updated values
+                const newTitle = document.getElementById('info_panel_title').innerHTML;
+                const newSeason = document.getElementById('info_panel_season_select').value;
+                const newContent = document.getElementById('info_panel_content').innerHTML;
+                
+                // Update the item
+                if (currentViewingItem) {
+                    // Update title
+                    const itemTitle = currentViewingItem.querySelector('.item-title');
+                    itemTitle.innerHTML = newTitle;
+                    
+                    // Update season class
+                    currentViewingItem.classList.remove(season);
+                    currentViewingItem.classList.add(newSeason);
+                    currentViewingItem.dataset.season = newSeason;
+                    
+                    // Update content
+                    currentViewingItem.dataset.content = newContent;
+                    
+                    // Update last accessed time
+                    currentViewingItem.dataset.lastAccessed = new Date();
+                }
+                
+                // Close the panel
+                infoPanel.classList.add('hidden');
+                currentViewingItem = null;
+                
+                // Refresh the filter to maintain current view
+                refreshFilter();
+            };
 
             // Close info panel
             document.getElementById('info_panel_close').onclick = function(event) {
                 event.preventDefault();
                 infoPanel.classList.add('hidden');
-            }
+                currentViewingItem = null;
+            };
         }
         
     </script>
