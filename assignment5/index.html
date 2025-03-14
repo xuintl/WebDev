@@ -44,17 +44,22 @@
             border: 1px solid black;
             border-radius: 5px;
             display: inline-block;
+            cursor: pointer;
+            transition: all 0.3s;
         }
-        .spring {
+        .item-title {
+            margin: 0;
+        }
+        .Spring {
             background-color: aquamarine;
         }
-        .summer {
+        .Summer {
             background-color: yellow;
         }
-        .fall {
+        .Fall {
             background-color: orange;
         }
-        .winter {
+        .Winter {
             background-color: lightblue;
         }
         .delete-button {
@@ -77,6 +82,38 @@
         .item:hover .delete-button {
             visibility: visible;
         }
+        .complete-button {
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            background-color: green;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        .complete-button:hover {
+            background-color: darkgreen;
+        }
+        .completed {
+            opacity: 0.7;
+            text-decoration: line-through;
+        }
+        .complete-button.completed {
+            background-color: gray;
+            opacity: 1;
+            text-decoration: none;
+        }
+        .complete-button.completed:hover {
+            background-color: darkgray;
+        }
+        .item:hover .complete-button {
+            visibility: visible;
+        }
     </style>
 </head>
 
@@ -85,10 +122,12 @@
 
     <select id="filter" style="position:absolute; right: 30px; top: 30px;">
         <option value="all">All Seasons</option>
-        <option value="spring">Spring</option>
-        <option value="summer">Summer</option>
-        <option value="fall">Fall</option>
-        <option value="winter">Winter</option>
+        <option value="completed">Completed</option>
+        <option value="incomplete">Incomplete</option>
+        <option value="Spring">Spring</option>
+        <option value="Summer">Summer</option>
+        <option value="Fall">Fall</option>
+        <option value="Winter">Winter</option>
     </select>
 
     <img id="add_panel_button" src="./images/add_button.png" alt="Add Event Button">
@@ -109,10 +148,10 @@
                 <br>
                 <select class="add_panel_element" id="add_panel_season">
                     <option value="">Select a season</option>
-                    <option value="spring">Spring</option>
-                    <option value="summer">Summer</option>
-                    <option value="fall">Fall</option>
-                    <option value="winter">Winter</option>
+                    <option value="Spring">Spring</option>
+                    <option value="Summer">Summer</option>
+                    <option value="Fall">Fall</option>
+                    <option value="Winter">Winter</option>
                 </select>
             </div>
             <br>
@@ -126,16 +165,17 @@
                 <button id="add_panel_save">Save</button>
                 <button id="add_panel_cancel">Cancel</button>
             </div>
-        </form>
+        </form> 
+    </div>
 
-        <div id="info_panel" class="hidden" style="box-sizing: border-box; padding: 20px; width: 300px; height: 400px; background-color: #fff; position: absolute; top: 50%; left: 50%; margin-left: -150px; margin-top: -200px; border-radius: 20px;">
-            <h2 id="info_panel_title"></h2>
-            <p>Season: <span id="info_panel_season"></span></p>
-            <p>Content: <span id="info_panel_content"></span></p>
-            <hr>
-            <p>Created At: <span id="info_panel_created_at"></span></p>
-            <p>Last Accessed: <span id="info_panel_last_accessed"></span></p>
-            <button id="info_panel_close">Close</button>
+    <div id="info_panel" class="hidden" style="box-sizing: border-box; padding: 20px; width: 600px; height: 400px; background-color: #fff; position: absolute; top: 50%; left: 50%; margin-left: -300px; margin-top: -200px; border-radius: 20px;">
+        <h2 id="info_panel_title"></h2>
+        <p>Season: <span id="info_panel_season"></span></p>
+        <p><span id="info_panel_content"></span></p>
+        <hr>
+        <p>Created At: <span id="info_panel_created_at"></span></p>
+        <p>Last Accessed: <span id="info_panel_last_accessed"></span><br></p>
+        <button id="info_panel_close">Close</button>
     </div>
 
     <script>
@@ -143,8 +183,12 @@
         const add_panel = document.querySelector('#add_panel');
         const add_panel_save = document.getElementById('add_panel_save');
         const add_panel_cancel = document.getElementById('add_panel_cancel');
+        const infoPanel = document.getElementById('info_panel');
 
         add_panel_button.onclick = function(event) {
+            if (!infoPanel.classList.contains('hidden')) {
+                infoPanel.classList.add('hidden');
+            }
             add_panel.classList.remove('hidden');
         }
         add_panel_save.onclick = function(event) {
@@ -154,15 +198,21 @@
             const content = document.getElementById('add_panel_content').value;
 
             // Form validation
-            // if (!title || !season || !content) {
-            //     alert('Please fill out all fields');
-            //     return;
-            // }
+            if (!title || !season || !content) {
+                alert('Please fill out all fields');
+                return;
+            }
+
+            // Revert filter to 'all'
+            document.getElementById('filter').value = 'all';
 
             // Create event
             const item = document.createElement('div');
+            const itemTitle = document.createElement('p');
+            itemTitle.innerHTML = title;
+            itemTitle.classList.add('item-title');
+            item.appendChild(itemTitle);
             item.classList.add(season);
-            item.innerHTML = title;
             item.dataset.content = content;
             item.classList.add('item');
             document.getElementById('items').appendChild(item);
@@ -173,11 +223,18 @@
 
             // Add item click handler
             item.onclick = function(event) {
+                console.log(this.classList[0]);
                 // Show info panel with item details
-                showInfoPanel(this.innerHTML, season, this.dataset.content, this.dataset.createdAt, new Date());
+                showInfoPanel(
+                    this.querySelector('.item-title').innerHTML,
+                    this.classList[0],
+                    this.dataset.content,
+                    this.dataset.createdAt,
+                    this.dataset.lastAccessed
+                );
                 // Update last accessed time
                 this.dataset.lastAccessed = new Date();
-            }
+            };
 
             // Add delete button to items
             const deleteButton = document.createElement('button');
@@ -190,7 +247,27 @@
             };
             item.appendChild(deleteButton);
 
-            // Add hover functionality
+            // Add complete button to items
+            const completeButton = document.createElement('button');
+            completeButton.innerHTML = '✓';
+            completeButton.classList.add('complete-button');
+            completeButton.onclick = function(event) {
+                event.preventDefault(); // Prevent form submission
+                event.stopPropagation(); // Prevent triggering item's onclick
+                
+                // Toggle completion state
+                if (item.classList.contains('completed')) {
+                    item.classList.remove('completed');
+                    this.classList.remove('completed');
+                } else {
+                    item.classList.add('completed');
+                    this.classList.add('completed');
+                }
+                refreshFilter();
+            };
+            item.appendChild(completeButton);
+
+            // Add hover functionality, replaced by CSS
             // item.onmouseover = function() {
             //     this.querySelector('.delete-button').classList.remove('hidden');
             // }
@@ -208,18 +285,37 @@
         }
 
         // Add the filter functionality
-        document.getElementById('filter').onchange = function() {
-            const filterValue = this.value;
+        document.getElementById('filter').onchange = function() {            
+            refreshFilter();
+        }
+        function refreshFilter() {
+            const filterValue = document.getElementById('filter').value;
             const items = document.querySelectorAll('.item');
-            
+
             if (filterValue === 'all') {
-                items.forEach(item => item.style.visibility = 'visible');
+                items.forEach(item => item.style.display = 'inline-block');
+            } else if (filterValue === 'completed') {
+                items.forEach(item => {
+                    if (item.classList.contains('completed')) {
+                        item.style.display = 'inline-block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            } else if (filterValue === 'incomplete') {
+                items.forEach(item => {
+                    if (!item.classList.contains('completed')) {
+                        item.style.display = 'inline-block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
             } else {
                 items.forEach(item => {
                     if (item.classList.contains(filterValue)) {
-                        item.style.visibility = 'visible';
+                        item.style.display = 'inline-block';
                     } else {
-                        item.style.visibility = 'hidden';
+                        item.style.display = 'none';
                     }
                 });
             }
@@ -227,8 +323,10 @@
 
         // Function to show info panel
         function showInfoPanel(title, season, content, createdAt, lastAccessed) {
+            if(!add_panel.classList.contains('hidden')) {
+                add_panel.classList.add('hidden');
+            }
             // Show info panel
-            const infoPanel = document.getElementById('info_panel');
             infoPanel.classList.remove('hidden');
             document.getElementById('info_panel_title').innerHTML = title;
             document.getElementById('info_panel_season').innerHTML = season;
@@ -242,6 +340,7 @@
                 infoPanel.classList.add('hidden');
             }
         }
+        
     </script>
 
 </body>
