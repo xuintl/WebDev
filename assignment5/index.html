@@ -3,20 +3,47 @@
 <head>
     <title>Season To-Do List</title>
     <style>
-        #button_add_event:hover {
+        body {
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        h1 {
+            text-align: center;
+            color: white;
+            text-shadow: 2px 2px 4px #000000;
+        }
+        #add_panel_button {
+            width: 50px;
+            height: 50px;
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #add_panel_button:hover {
             width: 60px;
             height: 60px;
-            bottom: 15px;
-            right: 15px;
+            bottom: 25px;
+            right: 25px;
+        }
+        .add_panel_element {
+            width: 250px;
         }
         .hidden {
-            display: none;
+            visibility: hidden;
         }
         .item {
+            position: relative;
+            width: 100px;
+            height: 100px;
             padding: 1rem;
             margin: 1rem;
+            border: 1px solid black;
             border-radius: 5px;
-            
+            display: inline-block;
         }
         .spring {
             background-color: aquamarine;
@@ -30,11 +57,31 @@
         .winter {
             background-color: lightblue;
         }
+        .delete-button {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background-color: black;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+        .delete-button:hover {
+            background-color: darkred;
+        }
+        .item:hover .delete-button {
+            visibility: visible;
+        }
     </style>
 </head>
 
 <body style="background-image: url(./images/corkboard.jpg);">
-    <h1>Season To-Do List</h1>
+    <h1>Seasonal To-Do List</h1>
 
     <select id="filter" style="position:absolute; right: 30px; top: 30px;">
         <option value="all">All Seasons</option>
@@ -44,20 +91,23 @@
         <option value="winter">Winter</option>
     </select>
 
-    <img id="button_add_event" src="./images/add_button.png" alt="Add Event Button" width="50" height="50" style="position:absolute; right: 20px; bottom: 20px; transition: 0.5s ease-in-out;">
+    <img id="add_panel_button" src="./images/add_button.png" alt="Add Event Button">
 
     <div id="items"></div>
 
-    <div id="modal_add_event" class="hidden">
+    <div id="add_panel" class="hidden" style="box-sizing: border-box; padding: 20px; width: 300px; height: 400px; background-color: #fff; position: absolute; top: 50%; left: 50%; margin-left: -150px; margin-top: -200px; border-radius: 20px;">
         <h2>New Event</h2>
         <form>
             <div>
-                <label for="modal_add_event_title">Title:</label>
-                <input type="text" id="modal_add_event_title">
+                <label for="add_panel_title">Title</label>
+                <br>
+                <input type="text" class="add_panel_element" id="add_panel_title">
             </div>
+            <br>
             <div>
-                <label for="modal_add_event_season">Season</label>
-                <select id="modal_add_event_season">
+                <label for="add_panel_season">Season</label>
+                <br>
+                <select class="add_panel_element" id="add_panel_season">
                     <option value="">Select a season</option>
                     <option value="spring">Spring</option>
                     <option value="summer">Summer</option>
@@ -65,107 +115,132 @@
                     <option value="winter">Winter</option>
                 </select>
             </div>
+            <br>
             <div>
-                <label for="modal_add_event_content">Content</label>
-                <textarea id="modal_add_event_content"></textarea>                    
+                <label for="add_panel_content">Content</label>
+                <br>
+                <textarea class="add_panel_element" id="add_panel_content"></textarea>                    
             </div>
+            <br>
             <div>
-                <button id="modal_add_event_save">Save</button>
-                <button id="modal_add_event_cancel">Cancel</button>
+                <button id="add_panel_save">Save</button>
+                <button id="add_panel_cancel">Cancel</button>
             </div>
         </form>
+
+        <div id="info_panel" class="hidden" style="box-sizing: border-box; padding: 20px; width: 300px; height: 400px; background-color: #fff; position: absolute; top: 50%; left: 50%; margin-left: -150px; margin-top: -200px; border-radius: 20px;">
+            <h2 id="info_panel_title"></h2>
+            <p>Season: <span id="info_panel_season"></span></p>
+            <p>Content: <span id="info_panel_content"></span></p>
+            <hr>
+            <p>Created At: <span id="info_panel_created_at"></span></p>
+            <p>Last Accessed: <span id="info_panel_last_accessed"></span></p>
+            <button id="info_panel_close">Close</button>
     </div>
 
     <script>
-        const button_add_event = document.querySelector('#button_add_event');
-        const modal_add_event = document.querySelector('#modal_add_event');
-        const model_add_event_save = document.getElementById('modal_add_event_save');
-        const modal_add_event_cancel = document.getElementById('modal_add_event_cancel');
+        const add_panel_button = document.querySelector('#add_panel_button');
+        const add_panel = document.querySelector('#add_panel');
+        const add_panel_save = document.getElementById('add_panel_save');
+        const add_panel_cancel = document.getElementById('add_panel_cancel');
 
-        button_add_event.onclick = function(event) {
-            modal_add_event.classList.remove('hidden');
+        add_panel_button.onclick = function(event) {
+            add_panel.classList.remove('hidden');
         }
-        modal_add_event_cancel.onclick = function(event) {
+        add_panel_save.onclick = function(event) {
             event.preventDefault();
-            modal_add_event.classList.add('hidden');
-        }
-        model_add_event_save.onclick = function(event) {
-            event.preventDefault();
-            const title = document.getElementById('modal_add_event_title').value;
-            const season = document.getElementById('modal_add_event_season').value;
-            const content = document.getElementById('modal_add_event_content').value;
+            const title = document.getElementById('add_panel_title').value;
+            const season = document.getElementById('add_panel_season').value;
+            const content = document.getElementById('add_panel_content').value;
 
             // Form validation
-            if (!title || !season || !content) {
-                alert('Please fill out all fields');
-                return;
-            }
+            // if (!title || !season || !content) {
+            //     alert('Please fill out all fields');
+            //     return;
+            // }
 
             // Create event
             const item = document.createElement('div');
-            item.classList.add('item');
             item.classList.add(season);
             item.innerHTML = title;
             item.dataset.content = content;
+            item.classList.add('item');
             document.getElementById('items').appendChild(item);
 
             // Add creation time
             item.dataset.createdAt = new Date();
             item.dataset.lastAccessed = item.dataset.createdAt;
 
-            // Fix item click handler
+            // Add item click handler
             item.onclick = function(event) {
                 // Show info panel with item details
                 showInfoPanel(this.innerHTML, season, this.dataset.content, this.dataset.createdAt, new Date());
-                
                 // Update last accessed time
                 this.dataset.lastAccessed = new Date();
             }
 
             // Add delete button to items
-            const deleteBtn = document.createElement('button');
-            deleteBtn.innerHTML = '×';
-            deleteBtn.classList.add('delete-btn', 'hidden');
-            deleteBtn.onclick = function(event) {
+            const deleteButton = document.createElement('button');
+            deleteButton.innerHTML = '×';
+            deleteButton.classList.add('delete-button');
+            deleteButton.onclick = function(event) {
+                event.preventDefault(); // Prevent form submission
                 event.stopPropagation(); // Prevent triggering item's onclick
                 item.remove();
             };
-            item.appendChild(deleteBtn);
+            item.appendChild(deleteButton);
 
             // Add hover functionality
-            item.onmouseover = function() {
-                this.querySelector('.delete-btn').classList.remove('hidden');
-            }
-            item.onmouseout = function() {
-                this.querySelector('.delete-btn').classList.add('hidden');
-            }
+            // item.onmouseover = function() {
+            //     this.querySelector('.delete-button').classList.remove('hidden');
+            // }
+            // item.onmouseout = function() {
+            //     this.querySelector('.delete-button').classList.add('hidden');
+            // }
 
-            modal_add_event.classList.add('hidden');
-            modal_add_event.querySelector('form').reset();
+            add_panel.classList.add('hidden');
+            add_panel.querySelector('form').reset();
+        }
+        add_panel_cancel.onclick = function(event) {
+            event.preventDefault();
+            add_panel.classList.add('hidden');
+            add_panel.querySelector('form').reset();
         }
 
-        // Fix the filter functionality
+        // Add the filter functionality
         document.getElementById('filter').onchange = function() {
             const filterValue = this.value;
             const items = document.querySelectorAll('.item');
             
             if (filterValue === 'all') {
-                items.forEach(item => item.style.display = 'block');
+                items.forEach(item => item.style.visibility = 'visible');
             } else {
                 items.forEach(item => {
                     if (item.classList.contains(filterValue)) {
-                        item.style.display = 'block';
+                        item.style.visibility = 'visible';
                     } else {
-                        item.style.display = 'none';
+                        item.style.visibility = 'hidden';
                     }
                 });
             }
         }
 
         // Function to show info panel
-        function showInfoPanel(title, season, description, createdAt, lastAccessed) {
-            // Create and show info panel
-            // You'll need to implement this based on the requirements
+        function showInfoPanel(title, season, content, createdAt, lastAccessed) {
+            // Show info panel
+            const infoPanel = document.getElementById('info_panel');
+            infoPanel.classList.remove('hidden');
+            document.getElementById('info_panel_title').innerHTML = title;
+            document.getElementById('info_panel_season').innerHTML = season;
+            document.getElementById('info_panel_content').innerHTML = content;
+            document.getElementById('info_panel_created_at').innerHTML = createdAt;
+            document.getElementById('info_panel_last_accessed').innerHTML = lastAccessed;
+
+            // Close info panel
+            document.getElementById('info_panel_close').onclick = function(event) {
+                event.preventDefault();
+                infoPanel.classList.add('hidden');
+            }
         }
     </script>
 
