@@ -6,10 +6,22 @@
         body {
             background-color: #000;
             color: #fff;
-            font-family: sans-serif;
+            font-family: monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
         }
-        p {
-            margin: 1em 0;
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .container p, .container button {
+            margin: 0 0 1.5em 0;
         }
         .hidden {
             display: none;
@@ -30,13 +42,14 @@
 <body>
     <h1>Matching Game</h1>
 
-    <div id="panel_start">
+    <div id="panel_start" class="container">
+        <p>Welcome to the Matching Game!</p>
         <p>Play a fast-paced game of memory and try and beat your best time</p>
         <button id="button_playgame">Play the Game</button>
     </div>
 
     <div id="panel_gameplaying" class="hidden">
-        <p>Time elapsed: <span id="time_elapsed">0</p>
+        <p>Time elapsed: <span id="time_elapsed">0</span></p>
         <div id="token_container"></div>
     </div>
 
@@ -53,13 +66,25 @@
         const button_playgame = document.getElementById('button_playgame');
         const time_elapsed = document.getElementById('time_elapsed');
         const token_container = document.getElementById('token_container');
+        const time_yourtime = document.getElementById('time_yourtime');
+        const time_besttime = document.getElementById('time_besttime');
 
         // set up global variables to keep track of what the user has clicked on 
         let token1 = false;
         let token2 = false;
+        let timerInterval;
+        let gameTime = 0;
+        let matchesFound = 0;
+        let totalMatches = 6; // Since we're selecting 6 pairs
 
         // click the button to start the game
         button_playgame.onclick = function(event) {
+            // Reset game state
+            token_container.innerHTML = '';
+            time_elapsed.textContent = '0';
+            gameTime = 0;
+            matchesFound = 0;
+            
             // given: an array of image asset paths
             const assets = ['snorlax.png', 'electrabuzz.png', 'chansey.png', 'oddish.png',
                 'pikachu.png', 'paras.png', 'arcanine.png', 'ponita.png',
@@ -74,16 +99,30 @@
 
             panel_start.classList.add('hidden');
             panel_gameplaying.classList.remove('hidden');
+            panel_gameplaying.classList.add('container');
+            panel_gameover.classList.add('hidden');
+
+            // Start the timer
+            timerInterval = setInterval(function() {
+                gameTime++;
+                time_elapsed.textContent = gameTime;
+            }, 1000);
 
             // create the tiles for our game
             // select 6 images at random and put them into a new array
             const selectedImages = [];
 
-            for (let i = 0; i < 6 ; i++) {
-                let index = parseInt( Math.random() * assets.length );
-                selectedImages.push( assets[index] );
-                selectedImages.push( assets[index] );
-                assets.splice( index, 1 );
+            for (let i = 0; i < 6; i++) {
+                let index = parseInt(Math.random() * assets.length);
+                selectedImages.push(assets[index]);
+                selectedImages.push(assets[index]);
+                assets.splice(index, 1);
+            }
+
+            // Shuffle the selectedImages array to randomize positions
+            for (let i = selectedImages.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [selectedImages[i], selectedImages[j]] = [selectedImages[j], selectedImages[i]];
             }
 
             // create our tokens that the user can click on
@@ -115,11 +154,25 @@
 
                         if (token1.dataset.secretimage == token2.dataset.secretimage) {
                             // match!
+                            matchesFound++;
                             token1 = false;
                             token2 = false;
+
+                            // Check if all matches are found
+                            if (matchesFound === totalMatches) {
+                                clearInterval(timerInterval);
+                                panel_gameplaying.classList.add('hidden');
+                                panel_gameover.classList.remove('hidden');
+                                time_yourtime.textContent = gameTime;
+
+                                const bestTime = parseInt(time_besttime.textContent) || Infinity;
+                                if (gameTime < bestTime) {
+                                    time_besttime.textContent = gameTime;
+                                }
+                            }
                         }
                         else {
-                            setTimeout( function() {
+                            setTimeout(function() {
                                 // the user didn't match :(
                                 token1.src = 'images/pokeball.png';
                                 token2.src = 'images/pokeball.png';
@@ -137,9 +190,6 @@
             }
 
         }
-
-
-
 
         /* TO-DO:
             - generate interface (start screen, play screen, game over screen)
