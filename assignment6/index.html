@@ -3,6 +3,10 @@
 <head>
     <title>Matching Game</title>
     <style>
+        /* Basic Reset */
+        * {
+            box-sizing: border-box;
+        }
         body {
             background-color: #000;
             color: #fff;
@@ -26,15 +30,96 @@
         .hidden {
             display: none;
         }
+
+        /* Game Panel Styles */
         #token_container {
-            width: 400px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
         }
         #token_container img {
             width: 100px;
+            transition: transform 0.2s;
+        }
+        #token_container img:hover {
+            transform: scale(1.05);
+        }
+
+        /* Game Over Panel Styles */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
         }
         .wrong {
             border: 2px solid red;
-            animation: shake 0.5s;
+            animation: shake 0.3s;
+        }
+        
+        /* Difficulty Selector Styles */
+        .difficulty-selector {
+            margin-bottom: 1.5em;
+            text-align: center;
+        }
+        .difficulty-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 0.5em;
+        }
+        .difficulty-btn {
+            padding: 8px 15px;
+            background-color: #333;
+            color: white;
+            border: 2px solid #555;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .difficulty-btn.selected {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+        }
+        
+        /* Leaderboard Styles */
+        #leaderboard {
+            margin: 1em 0;
+            max-width: 100%;
+        }
+        #leaderboard_table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 0.5em;
+        }
+        #leaderboard_table th, #leaderboard_table td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #444;
+        }
+        #leaderboard_table th {
+            background-color: #333;
+        }
+        
+        /* High Score Form */
+        #high_score_form {
+            margin: 1em 0;
+        }
+        #player_name {
+            padding: 8px;
+            margin-right: 10px;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+        #score_form button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -45,17 +130,53 @@
     <div id="panel_start" class="container">
         <p>Welcome to the Matching Game!</p>
         <p>Play a fast-paced game of memory and try and beat your best time</p>
+        
+        <div class="difficulty-selector">
+            <p>Select difficulty:</p>
+            <div class="difficulty-buttons">
+                <button id="difficulty_easy" class="difficulty-btn selected">Easy (3×4)</button>
+                <button id="difficulty_medium" class="difficulty-btn">Medium (4×5)</button>
+                <button id="difficulty_hard" class="difficulty-btn">Hard (5×6)</button>
+            </div>
+        </div>
+        
         <button id="button_playgame">Play the Game</button>
     </div>
 
     <div id="panel_gameplaying" class="hidden">
-        <p>Time elapsed: <span id="time_elapsed">0</span></p>
+        <p>Time elapsed: <span id="time_elapsed">0</span>s</p>
         <div id="token_container"></div>
     </div>
 
     <div id="panel_gameover" class="hidden">
-        <div>Your time: <span id="time_yourtime">0</span></div>
-        <div>Best time: <span id="time_besttime">0</span></div>
+        <p>Your time: <span id="time_yourtime">0</span>s</p>
+        <!-- <p>Best time: <span id="time_besttime">Null</span>s</p> -->
+        
+        <div id="high_score_form" class="hidden">
+            <p>New high score! Enter your name:</p>
+            <form id="score_form">
+                <input type="text" id="player_name" required>
+                <button type="submit">Submit</button>
+            </form>
+        </div>
+        
+        <div id="leaderboard">
+            <h3>Top Scores</h3>
+            <table id="leaderboard_table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Name</th>
+                        <th>Time</th>
+                    </tr>
+                </thead>
+                <tbody id="leaderboard_body">
+                    <!-- Leaderboard entries will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <button id="button_playagain">Play Again</button>
     </div>
 
     <script>
@@ -63,22 +184,75 @@
         const panel_start = document.getElementById('panel_start');
         const panel_gameplaying = document.getElementById('panel_gameplaying');
         const panel_gameover = document.getElementById('panel_gameover');
-        const button_playgame = document.getElementById('button_playgame');
         const time_elapsed = document.getElementById('time_elapsed');
         const token_container = document.getElementById('token_container');
         const time_yourtime = document.getElementById('time_yourtime');
         const time_besttime = document.getElementById('time_besttime');
-
-        // set up global variables to keep track of what the user has clicked on 
-        let token1 = false;
-        let token2 = false;
+        const high_score_form = document.getElementById('high_score_form');
+        const leaderboard_body = document.getElementById('leaderboard_body');
+        
+        // Difficulty buttons
+        const difficulty_easy = document.getElementById('difficulty_easy');
+        const difficulty_medium = document.getElementById('difficulty_medium');
+        const difficulty_hard = document.getElementById('difficulty_hard');
+        
+        // Game variables
         let timerInterval;
         let gameTime = 0;
-        let matchesFound = 0;
-        let totalMatches = 6; // Since we're selecting 6 pairs
+        let currentDifficulty = 'easy'; // Default difficulty
+        let gridSizes = {
+            'easy': { cols: 4, rows: 3, pairs: 6, cardSize: 100 },
+            'medium': { cols: 5, rows: 4, pairs: 10, cardSize: 90 },
+            'hard': { cols: 6, rows: 5, pairs: 15, cardSize: 80 }
+        };
+        let totalMatches = gridSizes[currentDifficulty].pairs;
+        let animating = false; // Flag to prevent clicks during animations
+        
+        // Audio elements
+        const correctSound = new Audio('sounds/correct.wav');
+        const wrongSound = new Audio('sounds/wrong.wav');
+        const winSound = new Audio('sounds/win.wav');
+        
+        // Initialize leaderboard
+        let leaderboard = JSON.parse(localStorage.getItem('matchingGameLeaderboard')) || [];
+        
+        // Difficulty selector functionality
+        difficulty_easy.addEventListener('click', function() {
+            setDifficulty('easy');
+        });
+        difficulty_medium.addEventListener('click', function() {
+            setDifficulty('medium');
+        });
+        difficulty_hard.addEventListener('click', function() {
+            setDifficulty('hard');
+        });
+        function setDifficulty(difficulty) {
+            // Remove selected class from all buttons
+            difficulty_easy.classList.remove('selected');
+            difficulty_medium.classList.remove('selected');
+            difficulty_hard.classList.remove('selected');
+            
+            // Add selected class to the clicked button
+            document.getElementById('difficulty_' + difficulty).classList.add('selected');
+            
+            currentDifficulty = difficulty;
+            totalMatches = gridSizes[difficulty].pairs;
+        }
+        
+        function startGame() {
+            // Initialize game state
+            let token1 = false;
+            let token2 = false;
+            let matchesFound = 0;
 
-        // click the button to start the game
-        button_playgame.onclick = function(event) {
+            // Hide start panel and show game panel
+            panel_start.classList.add('hidden');
+            panel_start.classList.remove('container');
+            panel_gameplaying.classList.remove('hidden');
+            panel_gameplaying.classList.add('container');
+            panel_gameover.classList.add('hidden');
+            panel_gameover.classList.remove('container');
+
             // Reset game state
             token_container.innerHTML = '';
             time_elapsed.textContent = '0';
@@ -97,22 +271,11 @@
                 'gengar.png', 'eevee.png', 'bellsprout.png', 'squirtle.png',
                 'seel.png', 'caterpie.png'];
 
-            panel_start.classList.add('hidden');
-            panel_gameplaying.classList.remove('hidden');
-            panel_gameplaying.classList.add('container');
-            panel_gameover.classList.add('hidden');
-
-            // Start the timer
-            timerInterval = setInterval(function() {
-                gameTime++;
-                time_elapsed.textContent = gameTime;
-            }, 1000);
-
-            // create the tiles for our game
-            // select 6 images at random and put them into a new array
+            // create the tiles for our game based on difficulty
             const selectedImages = [];
+            const numPairs = gridSizes[currentDifficulty].pairs;
 
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < numPairs; i++) {
                 let index = parseInt(Math.random() * assets.length);
                 selectedImages.push(assets[index]);
                 selectedImages.push(assets[index]);
@@ -125,79 +288,174 @@
                 [selectedImages[i], selectedImages[j]] = [selectedImages[j], selectedImages[i]];
             }
 
-            // create our tokens that the user can click on
+            // Set the token container size based on difficulty
+            const cardSize = gridSizes[currentDifficulty].cardSize;
+            token_container.style.width = `${gridSizes[currentDifficulty].cols * (cardSize+10)}px`;
+
+            // Create our tokens that the user can click on
             for (let image of selectedImages) {
                 const el = document.createElement('img');
-                el.dataset.secretimage = `images/${image}`;
                 el.src = 'images/pokeball.png';
+                el.dataset.secretimage = `images/${image}`;
+                el.style.width = `${cardSize}px`;
+                el.style.height = `${cardSize}px`;
                 token_container.appendChild(el);
 
                 el.onclick = function(event) {
-                    // is this the user's first click?
-                    if (token1 == false) {
-                        el.src = el.dataset.secretimage;
-                        token1 = el;   
-
-                        console.log("token 1:");
-                        console.log(token1);                 
+                    // Prevent clicking during animations or on already revealed cards
+                    if (animating || token2 || el.src.includes(el.dataset.secretimage)) {
+                        return;
                     }
 
-                    // is this the second click?
+                    // Is this the user's first click?
+                    if (token1 == false) {
+                        el.src = el.dataset.secretimage;
+                        token1 = el;
+                    }
+                    // Is this the second click?
                     else {
-                        // are they the same?
                         token2 = el;
                         el.src = el.dataset.secretimage;
 
-                        console.log("second click");
-                        console.log(token1);
-                        console.log(token2);
-
                         if (token1.dataset.secretimage == token2.dataset.secretimage) {
-                            // match!
+                            // Match found!
+                            correctSound.play();
                             matchesFound++;
                             token1 = false;
                             token2 = false;
 
-                            // Check if all matches are found
+                            // Check if all matches have been found
                             if (matchesFound === totalMatches) {
-                                clearInterval(timerInterval);
-                                panel_gameplaying.classList.add('hidden');
-                                panel_gameover.classList.remove('hidden');
-                                time_yourtime.textContent = gameTime;
-
-                                const bestTime = parseInt(time_besttime.textContent) || Infinity;
-                                if (gameTime < bestTime) {
-                                    time_besttime.textContent = gameTime;
-                                }
+                                winSound.play();
+                                endGame();
                             }
                         }
                         else {
+                            // No match
+                            wrongSound.play();
+                            
+                            // Add wrong class for visual feedback
+                            token1.classList.add('wrong');
+                            token2.classList.add('wrong');
+                            
+                            // Set animating flag to prevent additional clicks
+                            animating = true;
+                            
                             setTimeout(function() {
-                                // the user didn't match :(
+                                // Reset cards
                                 token1.src = 'images/pokeball.png';
                                 token2.src = 'images/pokeball.png';
+                                token1.classList.remove('wrong');
+                                token2.classList.remove('wrong');
 
                                 token1 = false;
-                                token2 = false;                                
-                            }, 1000);
+                                token2 = false;
+                                
+                                // Re-enable clicking
+                                animating = false;
+                            }, 500);
                         }
-
-                        // reset the tokens to allow for a second click 
                     }
-
-                    //event.currentTarget.src = event.currentTarget.dataset.secretImage;
                 }
             }
 
+            // Start the timer
+            timerInterval = setInterval(function() {
+                gameTime++;
+                time_elapsed.textContent = gameTime;
+            }, 1000);
         }
 
-        /* TO-DO:
-            - generate interface (start screen, play screen, game over screen)
-            - randomly "deal" a series of tokens, face down
-            - allow the user to click on a token to reveal its face
-            - allow the user to click on a second token to check if the tokens are the same
-        */
+        function endGame() {
+            clearInterval(timerInterval);
+
+            // Switch to game over panel
+            panel_start.classList.add('hidden');
+            panel_start.classList.remove('container');
+            panel_gameplaying.classList.add('hidden');
+            panel_gameplaying.classList.remove('container');
+            panel_gameover.classList.remove('hidden');
+            panel_gameover.classList.add('container');
+
+            // Display the current game time
+            time_yourtime.textContent = gameTime;
+
+            // Check if this score qualifies for the leaderboard
+            const isHighScore = leaderboard.length < 3 || gameTime < leaderboard[leaderboard.length - 1].time;
+            
+            if (isHighScore) {
+                // Show high score form
+                high_score_form.classList.remove('hidden');
+                document.getElementById('score_form').onsubmit = function(e) {
+                    e.preventDefault();
+                    
+                    const playerNameForm = document.getElementById('player_name');
+                    const playerName = playerNameForm.value.trim() || 'Anonymous';
+                    playerNameForm.value = '';
+                    
+                    // Add score to leaderboard
+                    leaderboard.push({ name: playerName, time: gameTime });
+                    
+                    // Sort and limit to top 3
+                    leaderboard.sort((a, b) => a.time - b.time);
+                    if (leaderboard.length > 3) {
+                        leaderboard = leaderboard.slice(0, 3);
+                    }
+
+                    // Save to localStorage
+                    localStorage.setItem('matchingGameLeaderboard', JSON.stringify(leaderboard));
+                    
+                    // Hide form and update display
+                    high_score_form.classList.add('hidden');
+                    displayLeaderboard();
+                };
+            } else {
+                high_score_form.classList.add('hidden');
+            }
+            
+            // Display leaderboard
+            displayLeaderboard();
+            
+            // // For compatibility with the previous best time logic
+            // let bestTime = leaderboard.length > 0 ? leaderboard[0].time : null;
+            // if (bestTime) {
+            //     time_besttime.textContent = bestTime;
+            // }
+        }
         
+        function displayLeaderboard() {
+            leaderboard_body.innerHTML = '';
+            
+            if (leaderboard.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = '<td colspan="3">No scores yet</td>';
+                leaderboard_body.appendChild(row);
+            } else {
+                for (let i = 0; i < leaderboard.length; i++) {
+                    const score = leaderboard[i];
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${i+1}</td>
+                        <td>${score.name}</td>
+                        <td>${score.time}s</td>
+                    `;
+                    leaderboard_body.appendChild(row);
+                }
+            }
+        }
+
+        document.getElementById('button_playgame').onclick = function() {
+            startGame();
+        };
+
+        document.getElementById('button_playagain').onclick = function() {
+            panel_gameover.classList.add('hidden');
+            panel_start.classList.remove('hidden');
+            panel_start.classList.add('container');
+        };
+        
+        // Initialize the page
+        displayLeaderboard();
     </script>
 </body>
 </html>
