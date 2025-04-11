@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Assignment 07</title>
+    <title>Survey</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -20,9 +20,6 @@
             border: none;
             border-radius: 5px;
             cursor: pointer;
-        }
-        input[type="submit"]:hover {
-            background-color: rgb(75, 155, 205);
         }
         img {
             width: 300px;
@@ -48,11 +45,12 @@
         $error = $_GET['error'];
         if ($error) {
     ?>
-    <div class="error">Fill out the form!</div>
+    <div class="error">Please fill out the form! Error code: <?php echo $error; ?></div>
     <?php
         }
     ?>
 
+    <!-- Form action to process.php -->
     <form action="process.php" method="GET">
         <div>
             Favorite food:
