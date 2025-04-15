@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Fetch Programming Challenge</title>
+    </head>
+    <body>
+        <title>Fetch Programming Challenge</title>
+        <form>
+            <select id="letters">
+                <option value="A">A</option>
+                <option value="B">B</option>
+                <option value="C">C</option>
+                <option value="D">D</option>
+                <option value="E">E</option>
+                <option value="F">F</option>
+                <option value="G">G</option>
+                <option value="H">H</option>
+                <option value="I">I</option>
+                <option value="J">J</option>
+                <option value="K">K</option>
+                <option value="L">L</option>
+                <option value="M">M</option>
+                <option value="N">N</option>
+                <option value="O">O</option>
+                <option value="P">P</option>
+                <option value="Q">Q</option>
+                <option value="R">R</option>
+                <option value="S">S</option>
+                <option value="T">T</option>
+                <option value="U">U</option>
+                <option value="V">V</option>
+                <option value="W">W</option>
+                <option value="X">X</option>
+                <option value="Y">Y</option>
+                <option value="Z">Z</option>
+            </select>
+            <select id="numbers">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+                <option value="9">9</option>
+            </select>
+            <button id="submit">Fetch Text File</button>
+        </form>
+        <div id="result">Result</div>
+
+        <script>
+            // DOM references to the drop down lists
+            const letters = document.getElementById('letters');
+            const numbers = document.getElementById('numbers');
+            const resultDiv = document.getElementById('result');
+
+            // event listener to handle button presses
+            document.getElementById('submit').addEventListener('click', function(event) {
+                event.preventDefault();
+
+                async function fetchTextFile() {
+                    const letter = letters.value;
+                    const number = numbers.value;
+                    const filename = `datafiles/${letter}_${number}.txt`;
+
+                    try {
+                        const response = await fetch(filename);
+                        if (!response.ok) {
+                            throw new Error(`HTTP error! status: ${response.status}`);
+                        }
+                        const data = await response.text();
+                        resultDiv.textContent = data;
+                    } catch (error) {
+                        resultDiv.textContent = `Error: ${error}`;
+                    }
+                }
+
+                fetchTextFile();
+            });
+        </script>
+    </body>
+</html>
