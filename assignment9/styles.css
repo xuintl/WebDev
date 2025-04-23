@@ -1,0 +1,302 @@
+:root {
+    /* Define a series of CSS Custom Properties, which are really just variables that we can access later on in our CSS */
+    --accent: #4f86f7;
+    --bg: #f9f9f9;
+    --panel-bg: #ffffff;
+    --border: #ddd;
+    --error-bg: #ffeaea;
+    --error-border: #e0a1a1;
+    --error-text: #b10000;
+    --spacing: 1rem;
+
+    /* button colors */
+    --btn-primary-bg: #4f86f7;
+    --btn-primary-hover: #3a6dd8;
+    --btn-primary-text: #ffffff;
+    --btn-success-bg: #28a745;
+    --btn-success-hover: #218838;
+    --btn-success-text: #ffffff;
+    --btn-light-bg: #f8f9fa;
+    --btn-light-hover: #e2e6ea;
+    --btn-light-text: #333333;
+    --btn-danger-bg: #f08080;
+    --btn-danger-hover: #e06666;
+    --btn-danger-text: #ffffff;
+    --btn-secondary-bg: #8894b8;
+    --btn-secondary-hover: #727ea3;
+    --btn-secondary-text: #ffffff;
+}
+
+body {
+    font-family: system-ui, sans-serif;
+    background-color: var(--bg);
+
+    /* For example, access the '--spacing' variable */
+    padding: var(--spacing);
+    margin: 0;
+    color: #333;
+}
+
+h1 {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.toolbar {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+button {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+button.primary {
+    background-color: var(--btn-primary-bg);
+    color: var(--btn-primary-text);
+}
+
+button.primary:hover {
+    background-color: var(--btn-primary-hover);
+}
+
+button.secondary {
+    background-color: var(--btn-secondary-bg);
+    color: var(--btn-secondary-text);
+}
+
+button.secondary:hover {
+    background-color: var(--btn-secondary-hover);
+}
+
+button.success {
+    background-color: var(--btn-success-bg);
+    color: var(--btn-success-text);
+}
+
+button.success:hover {
+    background-color: var(--btn-success-hover);
+}
+
+button.danger {
+    background-color: var(--btn-danger-bg);
+    color: var(--btn-danger-text);
+}
+
+button.danger:hover {
+    background-color: var(--btn-danger-hover);
+}
+
+button.light {
+    background-color: var(--btn-light-bg);
+    color: var(--btn-light-text);
+}
+
+button.light:hover {
+    background-color: var(--btn-light-hover);
+}
+
+.panel {
+    background-color: var(--panel-bg);
+    border: 1px solid var(--border);
+    padding: 1rem;
+    margin: 2rem auto;
+    max-width: 600px;
+    border-radius: 8px;
+}
+
+.form-row {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+input,
+select,
+textarea {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+textarea {
+    resize: none;
+}
+
+.category-grid {
+    display: grid;
+    grid-template-columns: 2fr 60px;
+    /* text box + color swatch */
+    gap: var(--spacing);
+    align-items: center;
+}
+
+.category-grid .form-row {
+    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.category-row {
+    display: grid;
+    grid-template-columns: 1fr 3rem;
+    gap: 0.75rem;
+    width: 100%;
+    align-items: stretch;
+}
+
+.category-row input[type="text"] {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 1rem;
+    box-sizing: border-box;
+}
+
+.category-row input[type="color"] {
+    width: 100%;
+    height: 100%;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 0;
+    background: none;
+    appearance: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch,
+input[type="color"]::-moz-color-swatch {
+    border: none;
+    border-radius: 6px;
+}
+
+.category-tag {
+    display: inline-block;
+    width: fit-content;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    color: white;
+    border-radius: 4px;
+    margin-bottom: 0.5rem;
+    white-space: nowrap;
+    background-color: black;
+}
+
+.close-button {
+    float: right;
+    background-color: #eee;
+    margin-top: -1rem;
+    margin-right: -1rem;
+    border-radius: 0 8px 0 8px;
+}
+
+.todo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.todo-card {
+    background-color: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    position: relative;
+    padding-top: 2rem;
+    /* Space for controls */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-bottom: 2.5rem;
+    /* create space for bottom-aligned buttons */
+}
+
+/* Actions aligned to bottom right */
+.card-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    margin-top: 1rem;
+    align-self: flex-end;
+}
+
+.todo-card .category {
+    font-size: 0.8rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+}
+
+
+/* Smaller, icon-style buttons */
+.icon-button {
+    padding: 0.25rem 0.4rem;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    line-height: 1;
+}
+
+.todo-card h3 {
+    margin: 0.5rem 0 0.25rem;
+}
+
+.todo-card p {
+    margin: 0;
+}
+
+.todo-card .actions {
+    margin-top: 0.75rem;
+    display: flex;
+    gap: 0.5rem;
+}
+
+.todo-card .actions button {
+    flex: 1;
+}
+
+/* Error message block */
+.error-message {
+    background-color: var(--error-bg);
+    color: var(--error-text);
+    border: 1px solid var(--error-border);
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-bottom: var(--spacing);
+    font-size: 0.95rem;
+}
+
+.todo-card.complete {
+    border-left: 6px solid #b5e2b5;
+    background-color: #f1f1f1;
+}
+
+.todo-card.complete h3,
+.todo-card.complete p {
+    text-decoration: line-through;
+}
+
+.description {
+    white-space: pre-wrap;
+    /* Enables line breaks AND wrapping */
+    word-break: break-word;
+    /* Prevents overflow on long words */
+}
