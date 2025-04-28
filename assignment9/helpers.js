@@ -1,4 +1,5 @@
 async function performFetch(args) {
+
     // GET requests
     if (args.method && args.method.toLowerCase() === 'get') {
         try {

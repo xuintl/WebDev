@@ -2,205 +2,240 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <title>To Do List with Vue</title>
+    <title>Simple Chatroom</title>
 
-    <!-- Provided stylesheet -->
+    <!-- load provided styles for the chatroom UI -->
     <link rel="stylesheet" href="styles.css">
 
-    <!-- Load in the Vue library -->
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-
-    <!-- Load in our helpers library, which lets us make fetch requests -->
+    <!-- load the helpers.js library, which contains the 'performFetch' function for making fetch requests -->
     <script src="helpers.js"></script>
 </head>
 
 <body>
+    <!-- header to indicate current chatroom -->
+    <h1 id="chat_header">#chatroom-1</h1>
 
-    <h1>To Do List with Vue</h1>
-
-    <!-- The root element for our Vue app-->
-    <div id="app">
-
-        <!-- Toolbar -->
-        <div class="toolbar">
-            <button class="primary" @click="showAddNewItemPanel">Add Item</button>
-            <button class="primary">Save To-Do List</button>
+    <!-- panel to hold username input -->
+    <div id="panel_login" class="hidden">
+        <div class="login-panel">
+            <h2>Enter a username and password to begin chatting.</h2>
+            <p>If you don't have an account this will create one for you.</p>
+            <div id="panel_login_error_missinginfo" class="error-message hidden">Missing information, please try again
+            </div>
+            <div id="panel_login_error_incorrect" class="error-message hidden">Username and/or Password are incorrect
+            </div>
+            <form id="login_form">
+                <input type="text" id="panel_login_username_textbox" placeholder="Your username">
+                <input type="text" id="panel_login_password_textbox" placeholder="Your password">
+                <button id="panel_login_submit_button" type="submit">Join</button>
+            </form>
         </div>
-
-        <!-- Panel: Add New Item -->
-        <div class="panel" id="panelAddItem" v-if="isAddPanelVisible">
-            <button class="close-button light" @click="hideAddNewItemPanel">✕</button>
-            <h2>Add New Item</h2>
-
-            <div class="error-message" v-if="isAddPanelErrorMessageVisible">
-                Please fill out the form fully.
-            </div>
-
-            <div class="form-row">
-                <label for="itemTitle">Title</label>
-                <input type="text" id="itemTitle" v-model="addNewItemTitle">
-            </div>
-            <div class="form-row">
-                <label for="itemDescription">Description</label>
-                <textarea id="itemDescription" rows="3" v-model="addNewItemDescription"></textarea>
-            </div>
-            <div class="form-row">
-                <label for="itemCategory">Category</label>
-                <select id="itemCategory" v-model="addNewItemCategory">
-
-                    <!-- Sample category, replace with your own dynamically -->
-                    <option v-for="(item, index) in allCategories" :key="item" value="item">{{item}}</option>
-                    <!-- 
-                    <option value="Sample">Sample</option>
-                    -->
-                </select>
-            </div>
-            <button class="secondary" @click="saveNewItem">Save Item</button>
-        </div>
-
-        <!-- Panel: Edit Existing Item -->
-        <div class="panel" id="panelEditItem" v-if="isEditPanelVisible">
-            <button class="close-button light">✕</button>
-            <h2>Edit Item</h2>
-
-            <div class="error-message">
-                Please fill out the form fully.
-            </div>
-
-            <div class="form-row">
-                <label for="editTitle">Title</label>
-                <input type="text" id="editTitle">
-            </div>
-            <div class="form-row">
-                <label for="editDescription">Description</label>
-                <textarea id="editDescription" rows="3"></textarea>
-            </div>
-            <div class="form-row">
-                <label for="editCategory">Category</label>
-                <select id="editCategory">
-
-                    <!-- Sample category, replace with your own dynamically -->
-                    <option value="Sample">Sample</option>
-
-                </select>
-            </div>
-            <button class="secondary">Update Item</button>
-        </div>
-
-        <!-- Panel for Existing To-Do Items -->
-        <div class="todo-grid" id="panelExistingToDoItems" v-if="isExistingToDoListPanel">
-
-            <!-- Sample to-do list item, replace with your own dynamically -->
-
-            <div class="todo-card" v-for="(item, index) in existingItems" :key="index">
-                <span class="category-tag">Uncategorized</span>
-                <h3>{{item.title}}</h3>
-                <p>{{item.description}}</p>
-
-                <div class="card-actions">
-                    <button class="light">Edit</button>
-                    <button class="light">
-                        <span>Mark as Active</span>
-                        <span>Mark as Complete</span>
-                    </button>
-                    <button class="light">Delete</button>
-                </div>
-            </div>
-
-            <!--
-            <div class="todo-card">
-                <span class="category-tag">Uncategorized</span>
-                <h3>File Taxes</h3>
-                <p>Complete and file 2025 taxes.</p>
-
-                <div class="card-actions">
-                    <button class="light">Edit</button>
-                    <button class="light">
-                        <span>Mark as Active</span>
-                        <span>Mark as Complete</span>
-                    </button>
-                    <button class="light">Delete</button>
-                </div>
-            </div>
-            -->
-
-        </div>
-
     </div>
 
-    <!-- Your application code -->
+    <!-- panel to hold chat messages -->
+    <div id="panel_messages"></div>
+
+    <!-- panel containing the form for new chat messages -->
+    <form id="panel_chat_input">
+        <input id="message_input_textbox" type="text" placeholder="Message #chatroom-1">
+        <button id="message_input_submit_button" type="submit">Send</button>
+    </form>
+
+    <!-- main program -->
     <script>
-        Vue.createApp({
-        
-            data: function() {
-            
-                // our reactive data will go in here
-                return {
+        // obtain DOM references to our UI elements
+        const panel_login = document.getElementById('panel_login');
+        const panel_login_username_textbox = document.getElementById('panel_login_username_textbox');
+        const panel_login_submit_button = document.getElementById('panel_login_submit_button');
+        const panel_login_error_missinginfo = document.getElementById('panel_login_error_missinginfo');
+        const panel_login_error_incorrect = document.getElementById('panel_login_error_incorrect');
 
-                    isAddPanelVisible: false,
-                    isEditPanelVisible: false,
-                    isExistingToDoListPanel: true,
-                    isAddPanelErrorMessageVisible: false,
+        const panel_messages = document.getElementById('panel_messages');
+        const message_input_textbox = document.getElementById('message_input_textbox');
+        const message_input_submit_button = document.getElementById('message_input_submit_button');
 
-                    addNewItemTitle: '',
-                    addNewItemDescription: '',
-                    addNewItemCategory: '',
-                    
-                    allCategories: ['Personal', 'School', 'Home', 'Work', 'Play'],
+        // working variables
+        let username;
+        let id = 0;
+        let interactingFlag = false;
 
-                    existingItems: [
-                        {
-                            title: 'Walk the dog',
-                            description: 'Take the dog out after work',
-                            category: 'Personal'
-                        }
-                    ]           
-                }
-            
-            },
+        // login button
+        panel_login_submit_button.addEventListener('click', function (e) {
+            e.preventDefault();
 
-            methods: {
-            
-                showAddNewItemPanel: function() {
-                    this.isAddPanelVisible = true;
-                    this.isExistingToDoListPanel = false;
+            // make sure the user filled out the form
+            if (panel_login_username_textbox.value.length == 0 || panel_login_password_textbox.value.length == 0) {
+                panel_login_error_missinginfo.classList.remove('hidden');
+                panel_login_error_incorrect.classList.add('hidden');
+            }
+
+            // form is filled out, allow them to log in
+            // NOTE: you will need to update this code to handle (1) new users and (2) returning users
+            else {
+                username = panel_login_username_textbox.value;
+                panel_login.style.display = 'none'; /* need to use inline styles here due to display: flex */
+            }
+        });
+
+        // handle mouse over / out events to prevent scrolling while the user is interacting with the chat log
+        panel_messages.onmouseover = function (e) {
+            interactingFlag = true;
+        }
+        panel_messages.onmouseout = function (e) {
+            interactingFlag = false;
+        }
+
+        // function to retrieve previously posted messages
+        async function getMessages() {
+
+            // initiate a fetch request to our API
+            // we will send it the id of the last message we received
+            // when the program starts, the ide variable is set to 0, so this API request 
+            // will retrieve ALL previous messages the first time that it runs
+            performFetch({
+                url: 'api.php?command=getmessages',
+                method: 'post',
+                data: {
+                    id: id
                 },
+                success: function (data) {
+                    // convert the received data into a JSON object
+                    let jsonData = JSON.parse(data);
 
-                hideAddNewItemPanel: function() {
-                    this.isAddPanelVisible = false;
-                    this.isExistingToDoListPanel = true;                
-                },
+                    // extract the 'id' of the last item in the collection
+                    id = jsonData['id'];
 
-                saveNewItem: function() {
-                
-                    // check to make sure the user filled out the form completely
-                    if (this.addNewItemTitle.length == 0 || this.addNewItemDescription.length == 0 || this.addNewItemCategory.length == 0) {
-                        this.isAddPanelErrorMessageVisible = true;
-                        return;
+                    // visit each item and create a message element for each one
+                    for (let msg of jsonData.messages) {
+                        // this function is defined below and is used to create new '.message' elements
+                        // refer to the function documentation for more information on how it works
+                        createMessage({
+                            username: msg.username,
+                            message: msg.message,
+                            date: msg.date
+                        });
                     }
 
-                    // if there are no errors, close the error-message
-                    this.isAddPanelErrorMessageVisible = false;
+                    // if the user is not currently interacting with the message area we should scroll
+                    // to the bottom to show the most recent message
+                    if (!interactingFlag) {
+                        panel_messages.scrollTop = panel_messages.scrollHeight;
+                    }
 
-                    this.existingItems.push({
-                        title: this.addNewItemTitle,
-                        description: this.addNewItemDescription,
-                        category: this.addNewItemCategory
-                    });
+                    // call this function again in 1 second to attempt to get new data
+                    setTimeout(getMessages, 1000);
+                },
 
-                    // hide the panel
-                    this.isAddPanelVisible = false;
-                    this.isExistingToDoListPanel = true;                
+                // if an error occurs we should try this operation again in 1 second
+                error: function (error) {
+                    console.log("ERROR:", error);
+                    setTimeout(getMessages, 1000);
                 }
-            
+            });
+        }
+
+        // attempt to get messages 1 time when the page loads
+        getMessages();
+
+
+        // when the user clicks the submit button to post a new message
+        message_input_submit_button.addEventListener('click', function (event) {
+            event.preventDefault();
+
+            // make sure the user filled out the message input box
+            if (message_input_textbox.value.length == 0) {
+                return;
             }
-    
-        
-        }).mount("#app");
+
+            // disable the text box so the user can't modify it while the request 
+            // to save the message is being processed by the server
+            message_input_textbox.disabled = true;
+
+            // contact the server with our username and message
+            performFetch({
+                url: 'api.php?command=savemessage',
+                method: 'post',
+                data: {
+                    username: username,
+                    message: message_input_textbox.value
+                },
+
+                // upon success (or error), unlock the text box and clear it for the next message
+                success: function (data) {
+                    console.log(data);
+                    message_input_textbox.disabled = false;
+                    message_input_textbox.value = '';
+                },
+                error: function (error) {
+                    console.log("ERROR:", error);
+                    message_input_textbox.disabled = false;
+                    message_input_textbox.value = '';
+                }
+            })
+        });
+
+
+        // function: createMessage
+        // this function will create new message elements and add them to the #panel_messages panel
+        /* USAGE:
+
+            createMessage({
+                username: string,
+                message: string,
+                privateMessage: true|false, // optional
+                date: string // optional
+            })
+        */
+        function createMessage(args) {
+            /*
+            <div class="message private-message">
+                <div class="message-header">
+                    <div class="username">user1</div>
+                    <span class="timestamp">April 16th, 2025</span>
+                </div>
+                <div class="text">Hey there!</div>
+            </div>
+            */
+
+            // create a container element for this message
+            const div = document.createElement('div');
+            div.classList.add('message');
+
+            // determine if this is a private message -- if so, add the appropriate class
+            if (args.privateMessage) {
+                div.classList.add('private-message');
+            }
+
+            // message header element (username and optional timestamp container)
+            const divHeader = document.createElement('div');
+            divHeader.classList.add('message-header');
+            div.appendChild(divHeader);
+
+            // username element
+            const divUsername = document.createElement('span');
+            divUsername.classList.add('username');
+            divUsername.innerText = args.username;
+            divHeader.appendChild(divUsername);
+
+            // date element (optional)
+            if (args.date) {
+                const divTimestamp = document.createElement('span');
+                divTimestamp.classList.add('timestamp');
+                divTimestamp.innerText = args.date;
+                divHeader.appendChild(divTimestamp);
+            }
+
+            // message text element
+            const divText = document.createElement('div');
+            divText.classList.add('text');
+            divText.innerText = args.message;
+            div.appendChild(divText);
+
+            // add to message panel
+            panel_messages.appendChild(div);
+        }        
 
     </script>
-
 </body>
 
 </html>
