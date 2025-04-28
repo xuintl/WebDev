@@ -44,22 +44,26 @@ session_start();
     </form>
 
     <?php
-    if (isset($_SESSION['search_error'])) {
-        echo "<br><div style='width: 100%; background-color: #f8d7da; padding: 5px; margin-bottom: 10px;'>" . htmlspecialchars($_SESSION['search_error']) . "</div>";
-        unset($_SESSION['search_error']);
-    }
 
-    if (isset($_SESSION['search_results'])) {
-        echo "<br><table border='1'>";
-        echo "<tr><td>Title</td><td>Year</td></tr>";
+    if (isset($_SESSION['search_error'])) {
+
+        print "<br><div style='width: 100%; background-color: #f8d7da; padding: 5px; margin-bottom: 10px;'>" . htmlspecialchars($_SESSION['search_error']) . "</div>";
+        unset($_SESSION['search_error']);
+
+    } elseif (isset($_SESSION['search_results'])) {
+
+        print "<br><table border='1'>";
+        print "<tr><td>Title</td><td>Year</td></tr>";
 
         foreach ($_SESSION['search_results'] as $result) {
-            echo "<tr> <td>{$result['title']}</td> <td>{$result['year']}</td> </tr>";
+            print "<tr> <td>{$result['title']}</td> <td>{$result['year']}</td> </tr>";
         }
 
-        echo "</table>";
+        print "</table>";
         unset($_SESSION['search_results']);
+
     }
+    
     ?>
 </body>
 </html>

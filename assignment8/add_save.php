@@ -31,9 +31,13 @@
         }
 
         $db = new SQLite3('databases/movies.db');
+
         $stmt = $db->prepare("INSERT INTO $active_table_name_for_crud_operations (title, year) VALUES (:title, :year)");
         $stmt->bindValue(':title', $title, SQLITE3_TEXT);
         $stmt->bindValue(':year', $year, SQLITE3_INTEGER);
+
+        $db->close();
+        unset($db);
 
         if ($stmt->execute()) {
             header("Location: $url_to_redirect_after_successful_insertion?success=1");

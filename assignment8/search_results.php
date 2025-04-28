@@ -41,6 +41,9 @@ while ($row = $result->fetchArray()) {
 }
 
 $_SESSION['search_results'] = $search_results;
+
+$db->close();
+unset($db);
 header("Location: search_form.php");
 exit;
 ?>
