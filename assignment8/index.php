@@ -12,6 +12,15 @@
 <body>
     <h1>Movie Database</h1>
 
+    <!-- Navigation Links -->
+    <nav>
+        <a href="index.php">Home</a> |
+        <a href="add_form.php">Add Movie</a> |
+        <a href="search_form.php">Search Movies</a>
+    </nav>
+
+    <br>
+
     <table border="1" width="100%">
         <tr>
             <td>Movie</td>
@@ -21,7 +30,7 @@
 
         <?php
             // connect to our database!
-            $db = new SQlite3('/home/databases/movies.db');
+            $db = new SQlite3('databases/movies.db');
 
             // use a SQL query to grab all movie records
             $sql = "SELECT id, title, year FROM movies ORDER BY title, year";
