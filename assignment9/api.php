@@ -31,7 +31,6 @@ if ($_GET['command'] == 'savemessage' && isset($_POST['username']) && isset($_PO
         print "error";
     }
 }
-
 // API call to retrieve all messages from the 'messages' table after a given id
 // requirements:
 //                  command = "getmessages"
@@ -53,17 +52,14 @@ else if ($_GET['command'] == 'getmessages' && isset($_POST['id'])) {
 
     // iterate over the result set
     while ($row = $result->fetchArray()) {
-        
         // store the result in an object
         $record = [];
         $record['id'] = $row[0];
         $record['username'] = $row[1];
         $record['message'] = $row[2];
         $record['date'] = $row[3];
-
         // push the object onto the 'messages' array
         array_push($send_back['messages'], $record);
-
         // update the 'id' variable to keep track of the largest id
         $send_back['id'] = $record['id'];
     }
@@ -71,7 +67,6 @@ else if ($_GET['command'] == 'getmessages' && isset($_POST['id'])) {
     // encode the object as a JSON string and send it to the client
     print json_encode($send_back);
 }
-
 
 // invalid command
 else {

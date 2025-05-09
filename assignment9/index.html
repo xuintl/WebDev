@@ -84,15 +84,16 @@
                     },
                     success: function (data) {
                         console.log("data:", data);
+                        let jsonData;
                         try {
-                            let jsonData = JSON.parse(data);
+                            jsonData = JSON.parse(data);
                         } catch (e) {
-                            console.error("Error while parsing theee JSON:", e);
+                            console.error("Error when parsing theee JSON:", e);
                             panel_login_error_incorrect.classList.remove('hidden');
                             panel_login_error_missinginfo.classList.add('hidden');
+                            return; // Exit if parsing fails
                         }
-
-                        if (jsonData.success) {
+                        if (jsonData && jsonData.success) {
                             panel_login_error_incorrect.classList.add('hidden');
                             panel_login_error_missinginfo.classList.add('hidden');
                             panel_login.style.display = 'none'; /* need to use inline styles here due to display: flex */
