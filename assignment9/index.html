@@ -13,7 +13,7 @@
 
 <body>
     <!-- header to indicate current chatroom -->
-    <h1 id="chat_header">#simple_chatroom</h1>
+    <h1 id="chat_header">#chatroom-1</h1>
 
     <!-- panel to hold username input -->
     <div id="panel_login" class="hidden">
@@ -73,7 +73,41 @@
             // NOTE: you will need to update this code to handle (1) new users and (2) returning users
             else {
                 username = panel_login_username_textbox.value;
-                panel_login.style.display = 'none'; /* need to use inline styles here due to display: flex */
+                // panel_login.style.display = 'none'; /* need to use inline styles here due to display: flex */
+
+                performFetch({
+                    url: 'login.php?command=login',
+                    method: 'post',
+                    data: {
+                        username: username,
+                        password: panel_login_password_textbox.value
+                    },
+                    success: function (data) {
+                        console.log("data:", data);
+                        try {
+                            let jsonData = JSON.parse(data);
+                        } catch (e) {
+                            console.error("Error while parsing theee JSON:", e);
+                            panel_login_error_incorrect.classList.remove('hidden');
+                            panel_login_error_missinginfo.classList.add('hidden');
+                        }
+
+                        if (jsonData.success) {
+                            panel_login_error_incorrect.classList.add('hidden');
+                            panel_login_error_missinginfo.classList.add('hidden');
+                            panel_login.style.display = 'none'; /* need to use inline styles here due to display: flex */
+                        } else {
+                            console.log("Login failed:", jsonData);
+                            panel_login_error_incorrect.classList.remove('hidden');
+                            panel_login_error_missinginfo.classList.add('hidden');
+                        }
+                    },
+                    error: function (e) {
+                        console.log("error:", e);
+                        panel_login_error_incorrect.classList.remove('hidden');
+                        panel_login_error_missinginfo.classList.add('hidden');
+                    }
+                });
             }
         });
 
@@ -87,7 +121,6 @@
 
         // function to retrieve previously posted messages
         async function getMessages() {
-
             // initiate a fetch request to our API
             // we will send it the id of the last message we received
             // when the program starts, the ide variable is set to 0, so this API request 
@@ -136,7 +169,6 @@
 
         // attempt to get messages 1 time when the page loads
         getMessages();
-
 
         // when the user clicks the submit button to post a new message
         message_input_submit_button.addEventListener('click', function (event) {
