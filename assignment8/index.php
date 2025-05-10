@@ -59,7 +59,7 @@
 
         <?php
         // connect to our database!
-        $db = new SQlite3('databases/movies.db');
+        $db = new SQLite3('/home/yx2679/databases/movies.db');
 
         // use a SQL query to grab all movie records
         $sql = "SELECT id, title, year FROM movies ORDER BY title, year";

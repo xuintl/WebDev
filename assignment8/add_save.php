@@ -30,7 +30,7 @@
             exit;
         }
 
-        $db = new SQLite3('databases/movies.db');
+        $db = new SQLite3('/home/yx2679/databases/movies.db');
 
         $stmt = $db->prepare("INSERT INTO $active_table_name_for_crud_operations (title, year) VALUES (:title, :year)");
         $stmt->bindValue(':title', $title, SQLITE3_TEXT);

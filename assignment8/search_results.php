@@ -1,6 +1,4 @@
 <?php
-session_start();
-
 $title = isset($_GET['title']) ? trim($_GET['title']) : '';
 $year = isset($_GET['year']) ? intval($_GET['year']) : null;
 
@@ -11,7 +9,7 @@ if (empty($title) && empty($year) || ($year && ($year <= 1900 || $year > date("Y
     exit;
 }
 
-$db = new SQLite3('databases/movies.db');
+$db = new SQLite3('/home/yx2679/databases/movies.db');
 
 $query = "SELECT title, year FROM movies WHERE 1=1";
 $params = [];
