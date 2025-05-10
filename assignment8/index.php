@@ -26,7 +26,7 @@
 
     <?php
     // connect to database
-    $db = new SQlite3('databases/movies.db');
+    $db = new SQLite3('/home/yx2679/databases/movies.db');
 
     // Handle delete request
     if (isset($_GET['delete'])) {

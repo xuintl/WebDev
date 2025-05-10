@@ -1,7 +1,7 @@
 <?php
 
 // connect to our database
-$path = 'databases';
+$path = '/home/yx2679/databases';
 $db = new SQLite3($path.'/accounts.db');
 
 if ($_GET['command'] == 'login') {

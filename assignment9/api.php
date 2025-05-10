@@ -7,7 +7,7 @@ if (!isset($_GET['command'])) {
 }
 
 // connect to our database
-$path = 'databases';
+$path = '/home/yx2679/databases';
 $db = new SQLite3($path.'/chat.db');
 
 // API call to save a message to the 'messages' table
