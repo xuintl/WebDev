@@ -16,176 +16,172 @@
 </head>
 
 <body>
-    <h1>To Do List with Vue</h1>
+<h1>To Do List with Vue</h1>
 
-    <!-- The root element for our Vue app-->
-    <div id="app">
-        <!-- Toolbar -->
-        <div class="toolbar">
-            <button class="primary" @click="showAddNewItemPanel">Add Item</button>
-            <button class="primary">Save To-Do List</button>
-        </div>
-
-        <!-- Panel: Add New Item -->
-        <div class="panel" id="panelAddItem" v-if="isAddPanelVisible">
-            <button class="close-button light" @click="hideAddNewItemPanel">✕</button>
-            <h2>Add New Item</h2>
-
-            <div class="error-message" v-if="isAddPanelErrorMessageVisible">
-                Please fill out the form fully.
-            </div>
-
-            <div class="form-row">
-                <label for="itemTitle">Title</label>
-                <input type="text" id="itemTitle" v-model="addNewItemTitle">
-            </div>
-            <div class="form-row">
-                <label for="itemDescription">Description</label>
-                <textarea id="itemDescription" rows="3" v-model="addNewItemDescription"></textarea>
-            </div>
-            <div class="form-row">
-                <label for="itemCategory">Category</label>
-                <select id="itemCategory" v-model="addNewItemCategory">
-
-                    <!-- Sample category, replace with your own dynamically -->
-                    <option v-for="(item, index) in allCategories" :key="item" value="item">{{item}}</option>
-                    <!-- 
-                    <option value="Sample">Sample</option>
-                    -->
-                </select>
-            </div>
-            <button class="secondary" @click="saveNewItem">Save Item</button>
-        </div>
-
-        <!-- Panel: Edit Existing Item -->
-        <div class="panel" id="panelEditItem" v-if="isEditPanelVisible">
-            <button class="close-button light">✕</button>
-            <h2>Edit Item</h2>
-
-            <div class="error-message">
-                Please fill out the form fully.
-            </div>
-
-            <div class="form-row">
-                <label for="editTitle">Title</label>
-                <input type="text" id="editTitle">
-            </div>
-            <div class="form-row">
-                <label for="editDescription">Description</label>
-                <textarea id="editDescription" rows="3"></textarea>
-            </div>
-            <div class="form-row">
-                <label for="editCategory">Category</label>
-                <select id="editCategory">
-
-                    <!-- Sample category, replace with your own dynamically -->
-                    <option value="Sample">Sample</option>
-
-                </select>
-            </div>
-            <button class="secondary">Update Item</button>
-        </div>
-
-        <!-- Panel for Existing To-Do Items -->
-        <div class="todo-grid" id="panelExistingToDoItems" v-if="isExistingToDoListPanel">
-
-            <!-- Sample to-do list item, replace with your own dynamically -->
-
-            <div class="todo-card" v-for="(item, index) in existingItems" :key="index">
-                <span class="category-tag">Uncategorized</span>
-                <h3>{{item.title}}</h3>
-                <p>{{item.description}}</p>
-
-                <div class="card-actions">
-                    <button class="light">Edit</button>
-                    <button class="light">
-                        <span>Mark as Active</span>
-                        <span>Mark as Complete</span>
-                    </button>
-                    <button class="light">Delete</button>
-                </div>
-            </div>
-
-            <!--
-            <div class="todo-card">
-                <span class="category-tag">Uncategorized</span>
-                <h3>File Taxes</h3>
-                <p>Complete and file 2025 taxes.</p>
-
-                <div class="card-actions">
-                    <button class="light">Edit</button>
-                    <button class="light">
-                        <span>Mark as Active</span>
-                        <span>Mark as Complete</span>
-                    </button>
-                    <button class="light">Delete</button>
-                </div>
-            </div>
-            -->
-        </div>
+<!-- The root element for our Vue app-->
+<div id="app">
+    <!-- Toolbar -->
+    <div class="toolbar">
+        <button class="primary" @click="showAddNewItemPanel">Add Item</button>
+        <button class="primary">Save To-Do List</button>
     </div>
 
+    <!-- Panel: Add New Item -->
+    <div class="panel" id="panelAddItem" v-if="isAddPanelVisible">
+        <button class="close-button light" @click="hideAddNewItemPanel">✕</button>
+        <h2>Add New Item</h2>
 
-    <!-- Your application code -->
-    <script>
-        Vue.createApp({
-        
-            data: function() {
-            
-                // our reactive data will go in here
-                return {
+        <div class="error-message" v-if="isAddPanelErrorMessageVisible">
+            Please fill out the form fully.
+        </div>
 
-                    isAddPanelVisible: false,
-                    isEditPanelVisible: false,
-                    isExistingToDoListPanel: true,
-                    isAddPanelErrorMessageVisible: false,
+        <div class="form-row">
+            <label for="itemTitle">Title</label>
+            <input type="text" id="itemTitle" v-model="addNewItemTitle">
+        </div>
+        <div class="form-row">
+            <label for="itemDescription">Description</label>
+            <textarea id="itemDescription" rows="3" v-model="addNewItemDescription"></textarea>
+        </div>
+        <div class="form-row">
+            <label for="itemCategory">Category</label>
+            <select id="itemCategory" v-model="addNewItemCategory">
 
-                    addNewItemTitle: '',
-                    addNewItemDescription: '',
-                    addNewItemCategory: '',
-                    
-                    allCategories: ['Personal', 'School', 'Home', 'Work', 'Play'],
+                <!-- Sample category, replace with your own dynamically -->
+                <option v-for="(item, index) in allCategories" :key="item" value="item">{{item}}</option>
+                <!-- 
+                <option value="Sample">Sample</option>
+                -->
+            </select>
+        </div>
+        <button class="secondary" @click="saveNewItem">Save Item</button>
+    </div>
 
-                    existingItems: [
-                        {
-                            title: 'Walk the dog',
-                            description: 'Take the dog out after work',
-                            category: 'Personal'
-                        }
-                    ]           
-                }
-            },
+    <!-- Panel: Edit Existing Item -->
+    <div class="panel" id="panelEditItem" v-if="isEditPanelVisible">
+        <button class="close-button light">✕</button>
+        <h2>Edit Item</h2>
 
-            methods: {
-            
-                showAddNewItemPanel: function() {
-                    this.isAddPanelVisible = true;
-                    this.isExistingToDoListPanel = false;
-                },
-                hideAddNewItemPanel: function() {
-                    this.isAddPanelVisible = false;
-                    this.isExistingToDoListPanel = true;                
-                },
-                saveNewItem: function() {
+        <div class="error-message">
+            Please fill out the form fully.
+        </div>
+
+        <div class="form-row">
+            <label for="editTitle">Title</label>
+            <input type="text" id="editTitle">
+        </div>
+        <div class="form-row">
+            <label for="editDescription">Description</label>
+            <textarea id="editDescription" rows="3"></textarea>
+        </div>
+        <div class="form-row">
+            <label for="editCategory">Category</label>
+            <select id="editCategory">
+
+                <!-- Sample category, replace with your own dynamically -->
+                <option value="Sample">Sample</option>
+
+            </select>
+        </div>
+        <button class="secondary">Update Item</button>
+    </div>
+
+    <!-- Panel for Existing To-Do Items -->
+    <div class="todo-grid" id="panelExistingToDoItems" v-if="isExistingToDoListPanel">
+
+        <!-- Sample to-do list item, replace with your own dynamically -->
+
+        <div class="todo-card" v-for="(item, index) in existingItems" :key="index">
+            <span class="category-tag">Uncategorized</span>
+            <h3>{{item.title}}</h3>
+            <p>{{item.description}}</p>
+
+            <div class="card-actions">
+                <button class="light">Edit</button>
+                <button class="light">
+                    <span>Mark as Active</span>
+                    <span>Mark as Complete</span>
+                </button>
+                <button class="light">Delete</button>
+            </div>
+        </div>
+
+        <!--
+        <div class="todo-card">
+            <span class="category-tag">Uncategorized</span>
+            <h3>File Taxes</h3>
+            <p>Complete and file 2025 taxes.</p>
+
+            <div class="card-actions">
+                <button class="light">Edit</button>
+                <button class="light">
+                    <span>Mark as Active</span>
+                    <span>Mark as Complete</span>
+                </button>
+                <button class="light">Delete</button>
+            </div>
+        </div>
+        -->
+    </div>
+</div>
+
+
+<!-- Your application code -->
+<script>
+    Vue.createApp({
+        data: function() {
+            // our reactive data will go in here
+            return {
+                isAddPanelVisible: false,
+                isEditPanelVisible: false,
+                isExistingToDoListPanel: true,
+                isAddPanelErrorMessageVisible: false,
+
+                addNewItemTitle: '',
+                addNewItemDescription: '',
+                addNewItemCategory: '',
                 
-                    // check to make sure the user filled out the form completely
-                    if (this.addNewItemTitle.length == 0 || this.addNewItemDescription.length == 0 || this.addNewItemCategory.length == 0) {
-                        this.isAddPanelErrorMessageVisible = true;
-                        return;
+                allCategories: ['Personal', 'School', 'Home', 'Work', 'Play'],
+
+                existingItems: [
+                    {
+                        title: 'Walk the dog',
+                        description: 'Take the dog out after work',
+                        category: 'Personal'
                     }
-                    // if there are no errors, close the error-message
-                    this.isAddPanelErrorMessageVisible = false;
-                    this.existingItems.push({
-                        title: this.addNewItemTitle,
-                        description: this.addNewItemDescription,
-                        category: this.addNewItemCategory
-                    });
-                    // hide the panel
-                    this.isAddPanelVisible = false;
-                    this.isExistingToDoListPanel = true;                
-                }
+                ]           
             }
-        }).mount("#app");
-    </script>
+        },
+
+        methods: {
+            showAddNewItemPanel: function() {
+                this.isAddPanelVisible = true;
+                this.isExistingToDoListPanel = false;
+            },
+            hideAddNewItemPanel: function() {
+                this.isAddPanelVisible = false;
+                this.isExistingToDoListPanel = true;                
+            },
+            saveNewItem: function() {
+            
+                // check to make sure the user filled out the form completely
+                if (this.addNewItemTitle.length == 0 || this.addNewItemDescription.length == 0 || this.addNewItemCategory.length == 0) {
+                    this.isAddPanelErrorMessageVisible = true;
+                    return;
+                }
+                // if there are no errors, close the error-message
+                this.isAddPanelErrorMessageVisible = false;
+                this.existingItems.push({
+                    title: this.addNewItemTitle,
+                    description: this.addNewItemDescription,
+                    category: this.addNewItemCategory
+                });
+                // hide the panel
+                this.isAddPanelVisible = false;
+                this.isExistingToDoListPanel = true;                
+            }
+        }
+    }).mount("#app");
+</script>
 </body>
 </html>
