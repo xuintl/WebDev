@@ -23,7 +23,12 @@
     <!-- Toolbar -->
     <div class="toolbar">
         <button class="primary" @click="showAddNewItemPanel">Add Item</button>
-        <button class="primary">Save To-Do List</button>
+        <button class="primary" @click="saveToDoList">Save List</button>
+        <button class="primary" @click="summary">AI Overview</button>
+        <select id="categoryFilter" v-model="selectedCategory" style="width: 200px;">
+            <option value="">All Categories</option>
+            <option v-for="(color, item) in allCategories" :key="item" :value="item">{{item}}</option>
+        </select>
     </div>
 
     <!-- Panel: Add New Item -->
@@ -46,12 +51,10 @@
         <div class="form-row">
             <label for="itemCategory">Category</label>
             <select id="itemCategory" v-model="addNewItemCategory">
-
                 <!-- Sample category, replace with your own dynamically -->
-                <option v-for="(item, index) in allCategories" :key="item" value="item">{{item}}</option>
-                <!-- 
-                <option value="Sample">Sample</option>
-                -->
+                <!-- <option value="Sample">Sample</option> -->
+                
+                <option v-for="(color, item) in allCategories" :key="item" :value="item">{{item}}</option>
             </select>
         </div>
         <button class="secondary" @click="saveNewItem">Save Item</button>
@@ -59,53 +62,33 @@
 
     <!-- Panel: Edit Existing Item -->
     <div class="panel" id="panelEditItem" v-if="isEditPanelVisible">
-        <button class="close-button light">✕</button>
+        <button class="close-button light" @click="hideEditItemPanel">✕</button>
         <h2>Edit Item</h2>
 
-        <div class="error-message">
-            Please fill out the form fully.
-        </div>
+        <div class="error-message" v-if="isEditPanelErrorMessageVisible">Please fill out the form fully.</div>
 
         <div class="form-row">
             <label for="editTitle">Title</label>
-            <input type="text" id="editTitle">
+            <input type="text" id="editTitle" v-model="editItemTitle">
         </div>
         <div class="form-row">
             <label for="editDescription">Description</label>
-            <textarea id="editDescription" rows="3"></textarea>
+            <textarea id="editDescription" rows="3" v-model="editItemDescription"></textarea>
         </div>
         <div class="form-row">
             <label for="editCategory">Category</label>
-            <select id="editCategory">
-
+            <select id="editCategory" v-model="editItemCategory">
                 <!-- Sample category, replace with your own dynamically -->
-                <option value="Sample">Sample</option>
-
+                <!-- <option value="Sample">Sample</option> -->
+                <option v-for="(color, item) in allCategories" :key="item" :value="item">{{item}}</option>
             </select>
         </div>
-        <button class="secondary">Update Item</button>
+        <button class="secondary" @click="updateItem">Update Item</button>
     </div>
 
     <!-- Panel for Existing To-Do Items -->
     <div class="todo-grid" id="panelExistingToDoItems" v-if="isExistingToDoListPanel">
-
         <!-- Sample to-do list item, replace with your own dynamically -->
-
-        <div class="todo-card" v-for="(item, index) in existingItems" :key="index">
-            <span class="category-tag">Uncategorized</span>
-            <h3>{{item.title}}</h3>
-            <p>{{item.description}}</p>
-
-            <div class="card-actions">
-                <button class="light">Edit</button>
-                <button class="light">
-                    <span>Mark as Active</span>
-                    <span>Mark as Complete</span>
-                </button>
-                <button class="light">Delete</button>
-            </div>
-        </div>
-
         <!--
         <div class="todo-card">
             <span class="category-tag">Uncategorized</span>
@@ -122,9 +105,23 @@
             </div>
         </div>
         -->
+
+        <div class="todo-card" v-for="(item, index) in existingItems" :key="item.id" :class="{ 'complete': item.complete }" v-show="selectedCategory === '' || item.category === selectedCategory">
+            <span class="category-tag" :style="{ backgroundColor: allCategories[item.category] }">{{item.category}}</span>
+            <h3>{{item.title}}</h3>
+            <p>{{item.description}}</p>
+
+            <div class="card-actions">
+                <button class="light" v-if="!item.complete" @click="showEditItemPanel(index)">Edit</button>
+                <button class="light">
+                    <span v-if="item.complete" @click="markActive(index)">Mark as Active</span>
+                    <span v-else @click="markComplete(index)">Mark as Complete</span>
+                </button>
+                <button class="light" @click="deleteItem(index)">Delete</button>
+            </div>
+        </div>
     </div>
 </div>
-
 
 <!-- Your application code -->
 <script>
@@ -136,34 +133,69 @@
                 isEditPanelVisible: false,
                 isExistingToDoListPanel: true,
                 isAddPanelErrorMessageVisible: false,
+                isEditPanelErrorMessageVisible: false,
 
                 addNewItemTitle: '',
                 addNewItemDescription: '',
                 addNewItemCategory: '',
-                
-                allCategories: ['Personal', 'School', 'Home', 'Work', 'Play'],
+                editItemTitle: '',
+                editItemDescription: '',
+                editItemCategory: '',
+                editItemIndex: 0,
+                selectedCategory: '',
+
+                allCategories: {
+                    'Uncategorized': 'grey',
+                    'Personal': 'blue',
+                    'Work': 'orange',
+                    'School': 'green'
+                },
 
                 existingItems: [
                     {
+                        id: crypto.randomUUID(),
                         title: 'Walk the dog',
                         description: 'Take the dog out after work',
-                        category: 'Personal'
+                        category: 'Personal',
+                        complete: false
+                    },
+                    {
+                        id: crypto.randomUUID(),
+                        title: 'Finish Assignment 10',
+                        description: 'Keep working on the Vue functionality of the webpage',
+                        category: 'School',
+                        complete: false
                     }
-                ]           
+                ],
+
             }
         },
 
         methods: {
+
             showAddNewItemPanel: function() {
                 this.isAddPanelVisible = true;
                 this.isExistingToDoListPanel = false;
+                this.isAddPanelErrorMessageVisible = false;
             },
             hideAddNewItemPanel: function() {
                 this.isAddPanelVisible = false;
-                this.isExistingToDoListPanel = true;                
+                this.isExistingToDoListPanel = true;
             },
+            showEditItemPanel: function(index) {
+                this.isEditPanelVisible = true;
+                this.isExistingToDoListPanel = false;
+                this.editItemTitle = this.existingItems[index].title;
+                this.editItemDescription = this.existingItems[index].description;
+                this.editItemCategory = this.existingItems[index].category;
+                this.editItemIndex = index;
+            },
+            hideEditItemPanel: function() {
+                this.isEditPanelVisible = false;
+                this.isExistingToDoListPanel = true;
+            },
+
             saveNewItem: function() {
-            
                 // check to make sure the user filled out the form completely
                 if (this.addNewItemTitle.length == 0 || this.addNewItemDescription.length == 0 || this.addNewItemCategory.length == 0) {
                     this.isAddPanelErrorMessageVisible = true;
@@ -172,14 +204,112 @@
                 // if there are no errors, close the error-message
                 this.isAddPanelErrorMessageVisible = false;
                 this.existingItems.push({
+                    id: crypto.randomUUID(),
                     title: this.addNewItemTitle,
                     description: this.addNewItemDescription,
-                    category: this.addNewItemCategory
+                    category: this.addNewItemCategory,
+                    complete: false
                 });
+                // reset form fields
+                this.addNewItemTitle = '';
+                this.addNewItemDescription = '';
+                this.addNewItemCategory = '';
                 // hide the panel
                 this.isAddPanelVisible = false;
-                this.isExistingToDoListPanel = true;                
+                this.isExistingToDoListPanel = true;
+                // show all
+                this.selectedCategory = '';
+            },
+            updateItem: function() {
+                // check to make sure the user filled out the form completely
+                if (this.editItemTitle.length == 0 || this.editItemDescription.length == 0 || this.editItemCategory.length == 0) {
+                    this.isEditPanelErrorMessageVisible = true;
+                    return;
+                }
+                // if there are no errors, close the error-message
+                this.isEditPanelErrorMessageVisible = false;
+                this.existingItems[this.editItemIndex].title = this.editItemTitle;
+                this.existingItems[this.editItemIndex].description = this.editItemDescription;
+                this.existingItems[this.editItemIndex].category = this.editItemCategory;
+                // hide the panel
+                this.isEditPanelVisible = false;
+                this.isExistingToDoListPanel = true;
+                // reset form fields (not necessary although)
+                this.editItemTitle = '';
+                this.editItemDescription = '';
+                this.editItemCategory = '';
+            },
+
+            markComplete: function(index) {
+                this.existingItems[index].complete = true;
+                console.log(this.existingItems[index]);
+            },
+            markActive: function(index) {
+                this.existingItems[index].complete = false;
+            },
+            deleteItem: function(index) {
+                this.existingItems.splice(index, 1);
+            },
+
+            saveToDoList: function() {
+                console.log(this.existingItems);
+                const jsonData = JSON.stringify(this.existingItems);
+                performFetch({
+                    url: 'save_todo_list.php',
+                    method: 'POST',
+                    data: { list: jsonData },
+                    success: (data) => {
+                        console.log(data);
+                    },
+                    error: (e) => {
+                        console.error('ERROR:', e);
+                    }
+                });
+            },
+
+            summary: function() {
+                const jsonData = JSON.stringify(this.existingItems);
+                performFetch({
+                    url: 'summary.php',
+                    method: 'POST',
+                    data: { message: 'Please provide a concise summary of the following to-do list items. Format is 1-2 sentences followed by To-Dos ranked by importance:\n\n' + jsonData },
+                    success: (data) => {
+                        console.log(data);
+                        alert(data);
+                    },
+                    error: (e) => {
+                        console.error('ERROR:', e);
+                    }
+                });
             }
+
+        },
+        mounted: function() {
+
+            performFetch({
+                url: 'get_todo_list.php',
+                method: 'GET',
+                success: (data) => {
+                    console.log(data);
+                    if (data) {
+                        try {
+                            const parsedJSON = JSON.parse(data);
+                            this.existingItems = parsedJSON;
+                            console.log(this.existingItems);
+                            console.log('load success');
+                        } catch (e) {
+                            console.error('error parsing:', e);
+                        }
+                    } else {
+                        console.log('no saved list');
+                    }
+                },
+                error: (err) => {
+                    console.error('server error:', err);
+                    this.existingItems = []; // Start with an empty list on error
+                }
+            });
+
         }
     }).mount("#app");
 </script>
