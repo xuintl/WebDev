@@ -4,7 +4,7 @@
 let gameState = 'start'; // 'start', 'input', 'loading', 'capture', 'journey', 'end'
 
 // INTEGRATION of Glitch server URL ---
-const glitchServerUrl = 'https://your-project-name.glitch.me';
+const serverUrl = 'https://synthestry-server.onrender.com';
 
 // User Input & AI Generation
 let regionInput = 'Chinese';
@@ -214,12 +214,13 @@ function startGeneration() {
   };
 
   httpPost(
-    `${glitchServerUrl}/generate-image`,
+    `${serverUrl}/generate-image`,
     'json',
     data,
     (result) => {
-      console.log("Received image URL:", result.imageUrl);
-      transitionSheet = loadImage(result.imageUrl, () => {
+      console.log("Received image data from server!"); // More accurate log message
+      // p5.js's loadImage can handle the Base64 Data URI directly
+      transitionSheet = loadImage(result.imageData, () => { 
         console.log("Image successfully loaded!");
         cropFrames();
         gameState = 'journey'; // Start the story!
@@ -228,11 +229,6 @@ function startGeneration() {
           alert("Error: Could not load the generated image.");
           gameState = 'input';
       });
-    },
-    (error) => {
-      console.error(error);
-      alert("An error occurred during image generation. Please check the server and try again.");
-      gameState = 'input'; // Go back to input screen on error
     }
   );
 }
