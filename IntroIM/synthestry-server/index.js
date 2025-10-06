@@ -34,9 +34,8 @@ app.post('/generate-image', async (req, res) => {
   try {
     const { gender, age, region } = req.body;
     
-    // This model name is for text-to-image. For newer models, you might use "gemini-1.5-flash", etc.
-    // Let's stick with a dedicated image model for consistency.
-    const model = genAI.getGenerativeModel({ model: "imagen-2-flash" });
+  // Gemini 2.5 Flash Image supports text-to-image generation via the Gemini API.
+  const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-image" });
 
     console.log(`Starting generation for: ${gender}, ${age}, ${region}`);
 
@@ -45,17 +44,34 @@ app.post('/generate-image', async (req, res) => {
     for (let i = 0; i < 4; i++) {
         const prompt = createPrompt(i, 4, gender, age, region);
         
-        // --- CHANGE 1: Use the correct function name: generateContent() ---
-        imagePromises.push(model.generateContent(prompt)); 
+        imagePromises.push(
+          model.generateContent({
+            contents: [
+              {
+                role: "user",
+                parts: [{ text: prompt }],
+              },
+            ],
+            generationConfig: {
+              responseMimeType: "image/png",
+            },
+          })
+        ); 
     }
     const generationResults = await Promise.all(imagePromises);
     
     // --- CHANGE 2: Extract the image data from the new response structure ---
-    const imageBuffers = generationResults.map(result => {
-        // The image data is returned as Base64 encoded text.
-        // We need to access it and convert it back into a Buffer for 'sharp'.
-        const base64Data = result.response.candidates[0].content.parts[0].inlineData.data;
-        return Buffer.from(base64Data, 'base64');
+  const imageBuffers = generationResults.map((result, index) => {
+    // The image data is returned as Base64 encoded text.
+    // We need to access it and convert it back into a Buffer for 'sharp'.
+    const parts = result.response?.candidates?.flatMap(candidate => candidate.content?.parts || []) || [];
+    const inlinePart = parts.find(part => part.inlineData?.data);
+
+    if (!inlinePart?.inlineData?.data) {
+      throw new Error(`No image data returned for frame ${index}.`);
+    }
+
+    return Buffer.from(inlinePart.inlineData.data, 'base64');
     });
 
     console.log("All 4 images generated. Now stitching...");
