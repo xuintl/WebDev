@@ -85,10 +85,3 @@ app.post('/generate-image', async (req, res) => {
 app.listen(port, () => {
   console.log(`Synthestry server listening on port ${port}`);
 });
-
-const port = process.env.PORT || 3000; // This is correct for Render
-
-app.listen(port, () => {
-  // THIS LINE IS VERY IMPORTANT FOR DEBUGGING
-  console.log(`Synthestry server is officially live and listening on port ${port}`);
-});
