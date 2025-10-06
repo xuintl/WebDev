@@ -200,8 +200,7 @@ function drawEndScreen() {
 
 // E. HELPER FUNCTIONS
 
-// --- INTEGRATION: This function now calls the API ---
-function startGeneration() {
+async function startGeneration() {
   gameState = 'loading';
   currentStep = 0;
 
@@ -213,24 +212,45 @@ function startGeneration() {
     age: ageInput.trim()
   };
 
-  httpPost(
-    `${serverUrl}/generate-image`,
-    'json',
-    data,
-    (result) => {
-      console.log("Received image data from server!"); // More accurate log message
-      // p5.js's loadImage can handle the Base64 Data URI directly
-      transitionSheet = loadImage(result.imageData, () => { 
-        console.log("Image successfully loaded!");
-        cropFrames();
-        gameState = 'journey'; // Start the story!
-      }, (err) => {
-          console.error("Failed to load the generated image:", err);
-          alert("Error: Could not load the generated image.");
-          gameState = 'input';
-      });
+  try {
+    // 1. Use fetch to make the POST request
+    const response = await fetch(`${serverUrl}/generate-image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(data), // Convert our JS object to a JSON string
+    });
+
+    // 2. Check if the server responded with an error
+    if (!response.ok) {
+      // Get more detail from the server's error response if possible
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Server responded with status: ${response.status}`);
     }
-  );
+
+    // 3. If the response is OK, read the JSON data from the stream
+    // The .json() method handles the ReadableStream for us!
+    const result = await response.json();
+
+    console.log("Received image data from server!");
+
+    // 4. Load the image from the Base64 data URI
+    transitionSheet = loadImage(result.imageData, () => {
+      console.log("Image successfully loaded!");
+      cropFrames();
+      gameState = 'journey'; // Start the story!
+    }, (err) => {
+      console.error("Failed to load the generated image from data:", err);
+      alert("Error: Could not load the generated image.");
+      gameState = 'input';
+    });
+
+  } catch (error) {
+    console.error("An error occurred during the fetch operation:", error);
+    alert(`An error occurred: ${error.message}. Please check the server and try again.`);
+    gameState = 'input'; // Go back to input screen on error
+  }
 }
 
 function cropFrames() {

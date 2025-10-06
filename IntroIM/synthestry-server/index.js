@@ -33,6 +33,9 @@ const createPrompt = (frame, totalFrames, gender, age, region) => {
 app.post('/generate-image', async (req, res) => {
   try {
     const { gender, age, region } = req.body;
+    
+    // This model name is for text-to-image. For newer models, you might use "gemini-1.5-flash", etc.
+    // Let's stick with a dedicated image model for consistency.
     const model = genAI.getGenerativeModel({ model: "imagen-2-flash" });
 
     console.log(`Starting generation for: ${gender}, ${age}, ${region}`);
@@ -41,14 +44,23 @@ app.post('/generate-image', async (req, res) => {
     const imagePromises = [];
     for (let i = 0; i < 4; i++) {
         const prompt = createPrompt(i, 4, gender, age, region);
-        imagePromises.push(model.generateImage({ prompt }));
+        
+        // --- CHANGE 1: Use the correct function name: generateContent() ---
+        imagePromises.push(model.generateContent(prompt)); 
     }
-    const imageResults = await Promise.all(imagePromises);
-    const imageBuffers = imageResults.map(result => result.image);
+    const generationResults = await Promise.all(imagePromises);
+    
+    // --- CHANGE 2: Extract the image data from the new response structure ---
+    const imageBuffers = generationResults.map(result => {
+        // The image data is returned as Base64 encoded text.
+        // We need to access it and convert it back into a Buffer for 'sharp'.
+        const base64Data = result.response.candidates[0].content.parts[0].inlineData.data;
+        return Buffer.from(base64Data, 'base64');
+    });
 
     console.log("All 4 images generated. Now stitching...");
 
-    // 2. Stitch the images together using Sharp
+    // 2. Stitch the images together using Sharp (This part remains the same)
     const imageDimensions = await sharp(imageBuffers[0]).metadata();
     const width = imageDimensions.width;
     const height = imageDimensions.height;
@@ -72,7 +84,7 @@ app.post('/generate-image', async (req, res) => {
 
     console.log("Stitching complete. Sending image back to client.");
 
-    // 3. Send the final image back as a Base64 Data URI
+    // 3. Send the final image back (This part remains the same)
     const imageDataURI = `data:image/png;base64,${stitchedImageBuffer.toString('base64')}`;
     res.json({ imageData: imageDataURI });
 
