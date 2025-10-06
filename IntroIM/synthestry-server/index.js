@@ -52,9 +52,6 @@ app.post('/generate-image', async (req, res) => {
                 parts: [{ text: prompt }],
               },
             ],
-            generationConfig: {
-              responseMimeType: "image/png",
-            },
           })
         ); 
     }
