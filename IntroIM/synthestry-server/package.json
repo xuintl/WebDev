@@ -1,0 +1,15 @@
+{
+  "name": "synthestry-server",
+  "version": "1.0.0",
+  "description": "Server for the Synthestry p5.js project.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.11.3",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "sharp": "^0.33.4"
+  }
+}
